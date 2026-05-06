@@ -6,7 +6,7 @@
     <title>SimpleNote — Create Account</title>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
 
-    <link rel="stylesheet" href="{{ asset('css/auth/style_LoginAndRegister.css') }}">
+    <link rel="stylesheet" href="<?php echo e(asset('css/auth/style_LoginAndRegister.css')); ?>">
 </head>
 <body>
 
@@ -42,43 +42,57 @@
             <span class="dot active"></span>
         </div>
 
-        <form method="POST" action="{{ route('register') }}">
-            @csrf
+        <form method="POST" action="<?php echo e(route('register')); ?>">
+            <?php echo csrf_field(); ?>
 
-            {{-- Full Name / Display Name --}}
+            
             <div class="form-group">
                 <input
                     type="text"
                     name="display_name"
                     placeholder="Full Name"
-                    value="{{ old('display_name') }}"
+                    value="<?php echo e(old('display_name')); ?>"
                     required
                     autofocus
                     autocomplete="name"
-                    class="{{ $errors->has('display_name') ? 'is-invalid' : '' }}"
+                    class="<?php echo e($errors->has('display_name') ? 'is-invalid' : ''); ?>"
                 >
-                @error('display_name')
-                    <span class="invalid-feedback">{{ $message }}</span>
-                @enderror
+                <?php $__errorArgs = ['display_name'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                    <span class="invalid-feedback"><?php echo e($message); ?></span>
+                <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
             </div>
 
-            {{-- Email --}}
+            
             <div class="form-group">
                 <input
                     type="email"
                     name="email"
                     placeholder="Email Address"
-                    value="{{ old('email') }}"
+                    value="<?php echo e(old('email')); ?>"
                     required
                     autocomplete="username"
-                    class="{{ $errors->has('email') ? 'is-invalid' : '' }}"
+                    class="<?php echo e($errors->has('email') ? 'is-invalid' : ''); ?>"
                 >
-                @error('email')
-                    <span class="invalid-feedback">{{ $message }}</span>
-                @enderror
+                <?php $__errorArgs = ['email'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                    <span class="invalid-feedback"><?php echo e($message); ?></span>
+                <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
             </div>
 
-            {{-- Password --}}
+            
             <div class="form-group">
                 <input
                     type="password"
@@ -86,15 +100,22 @@
                     placeholder="Password"
                     required
                     autocomplete="new-password"
-                    class="{{ $errors->has('password') ? 'is-invalid' : '' }}"
+                    class="<?php echo e($errors->has('password') ? 'is-invalid' : ''); ?>"
                 >
-                @error('password')
-                    <span class="invalid-feedback">{{ $message }}</span>
-                @enderror
+                <?php $__errorArgs = ['password'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                    <span class="invalid-feedback"><?php echo e($message); ?></span>
+                <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
                 <span class="password-hint">Minimum 8 characters</span>
             </div>
 
-            {{-- Confirm Password --}}
+            
             <div class="form-group">
                 <input
                     type="password"
@@ -102,19 +123,26 @@
                     placeholder="Confirm Password"
                     required
                     autocomplete="new-password"
-                    class="{{ $errors->has('password_confirmation') ? 'is-invalid' : '' }}"
+                    class="<?php echo e($errors->has('password_confirmation') ? 'is-invalid' : ''); ?>"
                 >
-                @error('password_confirmation')
-                    <span class="invalid-feedback">{{ $message }}</span>
-                @enderror
+                <?php $__errorArgs = ['password_confirmation'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                    <span class="invalid-feedback"><?php echo e($message); ?></span>
+                <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
             </div>
 
             <button type="submit" class="btn-register">Get Started</button>
         </form>
 
-        <p class="login-link">Already have an account? <a href="{{ route('login') }}">Login</a></p>
+        <p class="login-link">Already have an account? <a href="<?php echo e(route('login')); ?>">Login</a></p>
     </div>
 </div>
 
 </body>
-</html>
+</html><?php /**PATH D:\Coding\Composer\note-app\resources\views/auth/register.blade.php ENDPATH**/ ?>

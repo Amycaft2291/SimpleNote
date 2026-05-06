@@ -48,6 +48,12 @@ class RegisteredUserController extends Controller
 
         Auth::login($user); // Đăng nhập tự động sau khi đăng ký thành công [cite: 8, 218]
 
+        // Đoạn này để gửi email
+        \Illuminate\Support\Facades\Mail::send('emails.activation', ['user' => $user], function ($message) use ($user) {
+            $message->to($user->email);
+            $message->subject('Kích hoạt tài khoản SimpleNote');
+        });
+
         return redirect(route('dashboard', absolute: false));
     }
 }

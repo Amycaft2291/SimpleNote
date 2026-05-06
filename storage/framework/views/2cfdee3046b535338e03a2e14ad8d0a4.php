@@ -1,33 +1,34 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="<?php echo e(str_replace('_', '-', app()->getLocale())); ?>">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="csrf-token" content="{{ csrf_token() }}">
+        <meta name="csrf-token" content="<?php echo e(csrf_token()); ?>">
 
-        <title>{{ config('app.name', 'SimpleNote') }}</title>
+        <title><?php echo e(config('app.name', 'SimpleNote')); ?></title>
 
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
 
-        @vite(['resources/css/app.css', 'resources/js/app.js'])
+        <?php echo app('Illuminate\Foundation\Vite')(['resources/css/app.css', 'resources/js/app.js']); ?>
     </head>
     <body class="font-sans antialiased">
         <div class="min-h-screen bg-gray-100 dark:bg-gray-900">
-            @include('layouts.navigation')
+            <?php echo $__env->make('layouts.navigation', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
 
-            @isset($header)
+            <?php if(isset($header)): ?>
                 <header class="bg-white dark:bg-gray-800 shadow">
                     <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-                        {{ $header }}
+                        <?php echo e($header); ?>
+
                     </div>
                 </header>
-            @endisset
+            <?php endif; ?>
 
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 mt-6">
                 
-                {{-- 1. Thông báo chưa kích hoạt tài khoản (Màu vàng) --}}
-                @if(Auth::check() && !Auth::user()->is_activated)
+                
+                <?php if(Auth::check() && !Auth::user()->is_activated): ?>
                     <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4 shadow-sm sm:rounded-lg" role="alert">
                         <div class="flex">
                             <div class="flex-shrink-0">
@@ -37,15 +38,15 @@
                             </div>
                             <div class="ml-3">
                                 <p class="text-sm text-yellow-700">
-                                    <span class="font-bold">Tài khoản chưa xác thực!</span> Vui lòng kiểm tra email <strong>{{ Auth::user()->email }}</strong> để kích hoạt tài khoản. Bạn vẫn có thể sử dụng các tính năng hiện tại.
+                                    <span class="font-bold">Tài khoản chưa xác thực!</span> Vui lòng kiểm tra email <strong><?php echo e(Auth::user()->email); ?></strong> để kích hoạt tài khoản. Bạn vẫn có thể sử dụng các tính năng hiện tại.
                                 </p>
                             </div>
                         </div>
                     </div>
-                @endif
+                <?php endif; ?>
 
-                {{-- 2. Thông báo khi kích hoạt thành công (Màu xanh lá) --}}
-                @if (session('status'))
+                
+                <?php if(session('status')): ?>
                     <div class="bg-green-50 border-l-4 border-green-400 p-4 mb-4 shadow-sm sm:rounded-lg">
                         <div class="flex">
                             <div class="flex-shrink-0">
@@ -55,15 +56,16 @@
                             </div>
                             <div class="ml-3">
                                 <p class="text-sm text-green-700 font-medium">
-                                    {{ session('status') }}
+                                    <?php echo e(session('status')); ?>
+
                                 </p>
                             </div>
                         </div>
                     </div>
-                @endif
+                <?php endif; ?>
 
-                {{-- 3. Thông báo lỗi khi link kích hoạt sai (Màu đỏ) --}}
-                @if ($errors->has('activation'))
+                
+                <?php if($errors->has('activation')): ?>
                     <div class="bg-red-50 border-l-4 border-red-400 p-4 mb-4 shadow-sm sm:rounded-lg">
                         <div class="flex">
                             <div class="flex-shrink-0">
@@ -73,17 +75,19 @@
                             </div>
                             <div class="ml-3">
                                 <p class="text-sm text-red-700 font-medium">
-                                    {{ $errors->first('activation') }}
+                                    <?php echo e($errors->first('activation')); ?>
+
                                 </p>
                             </div>
                         </div>
                     </div>
-                @endif
+                <?php endif; ?>
 
             </div>
             <main>
-                {{ $slot }}
+                <?php echo e($slot); ?>
+
             </main>
         </div>
     </body>
-</html>
+</html><?php /**PATH D:\Coding\Composer\note-app\resources\views/layouts/app.blade.php ENDPATH**/ ?>
