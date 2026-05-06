@@ -11,25 +11,32 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->string('username')->unique();
+            // Thay username bằng display_name
+            $table->string('display_name'); 
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
-            $table->string('password');
+            $table->string('password'); // Để lưu dạng bcrypt [cite: 40]
             
-            $table->integer('font_size')->default(16);
-            $table->string('theme')->default('light');
+            // Quản lý kích hoạt tài khoản [cite: 42, 213]
+            $table->boolean('is_activated')->default(false);
+            $table->string('activation_token')->nullable();
             
-            $table->string('otp_code')->nullable();
+            // User Preferences (Tùy chỉnh người dùng) [cite: 45, 213]
+            $table->integer('font_size')->default(14);
+            $table->string('note_color')->default('#ffffff');
+            $table->enum('theme', ['light', 'dark'])->default('light');
+            
             $table->rememberToken();
             $table->timestamps();
         });
-
+        // 2. Bảng Password Reset [cite: 61]
         Schema::create('password_reset_tokens', function (Blueprint $table) {
             $table->string('email')->primary();
             $table->string('token');
             $table->timestamp('created_at')->nullable();
         });
 
+        // 3. Bảng Sessions để duy trì đăng nhập
         Schema::create('sessions', function (Blueprint $table) {
             $table->string('id')->primary();
             $table->foreignId('user_id')->nullable()->index();
