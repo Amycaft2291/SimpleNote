@@ -1,89 +1,217 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="csrf-token" content="{{ csrf_token() }}">
+@php
+    $theme = Auth::check() ? Auth::user()->theme : 'light';
+    $themeClass = $theme === 'dark' ? 'dark' : '';
+@endphp
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="{{ $themeClass }}">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>SimpleNote</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1" rel="stylesheet"/>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = { darkMode: "class", theme: { extend: { fontFamily: { sans: ['Inter'] } } } };
+    </script>
+    <style>
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .masonry-grid { column-count: 1; column-gap: 1.5rem; }
+        @media (min-width: 768px) { .masonry-grid { column-count: 2; } }
+        @media (min-width: 1280px) { .masonry-grid { column-count: 3; } }
+        @media (min-width: 1536px) { .masonry-grid { column-count: 4; } }
+        .masonry-item { break-inside: avoid; margin-bottom: 1.5rem; }
+        .list-view { column-count: 1 !important; }
+        .list-view .masonry-item { margin-bottom: 1rem; max-width: 800px; margin-left: auto; margin-right: auto; }
+    </style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 antialiased font-sans">
 
-        <title>{{ config('app.name', 'SimpleNote') }}</title>
-
-        <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
-
-        @vite(['resources/css/app.css', 'resources/js/app.js'])
-    </head>
-    <body class="font-sans antialiased">
-        <div class="min-h-screen bg-gray-100 dark:bg-gray-900">
-            @include('layouts.navigation')
-
-            @isset($header)
-                <header class="bg-white dark:bg-gray-800 shadow">
-                    <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-                        {{ $header }}
-                    </div>
-                </header>
-            @endisset
-
-            <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 mt-6">
-                
-                {{-- 1. Thông báo chưa kích hoạt tài khoản (Màu vàng) --}}
-                @if(Auth::check() && !Auth::user()->is_activated)
-                    <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4 shadow-sm sm:rounded-lg" role="alert">
-                        <div class="flex">
-                            <div class="flex-shrink-0">
-                                <svg class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
-                                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
-                                </svg>
-                            </div>
-                            <div class="ml-3">
-                                <p class="text-sm text-yellow-700">
-                                    <span class="font-bold">Tài khoản chưa xác thực!</span> Vui lòng kiểm tra email <strong>{{ Auth::user()->email }}</strong> để kích hoạt tài khoản. Bạn vẫn có thể sử dụng các tính năng hiện tại.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                @endif
-
-                {{-- 2. Thông báo khi kích hoạt thành công (Màu xanh lá) --}}
-                @if (session('status'))
-                    <div class="bg-green-50 border-l-4 border-green-400 p-4 mb-4 shadow-sm sm:rounded-lg">
-                        <div class="flex">
-                            <div class="flex-shrink-0">
-                                <svg class="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                                </svg>
-                            </div>
-                            <div class="ml-3">
-                                <p class="text-sm text-green-700 font-medium">
-                                    {{ session('status') }}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                @endif
-
-                {{-- 3. Thông báo lỗi khi link kích hoạt sai (Màu đỏ) --}}
-                @if ($errors->has('activation'))
-                    <div class="bg-red-50 border-l-4 border-red-400 p-4 mb-4 shadow-sm sm:rounded-lg">
-                        <div class="flex">
-                            <div class="flex-shrink-0">
-                                <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
-                                </svg>
-                            </div>
-                            <div class="ml-3">
-                                <p class="text-sm text-red-700 font-medium">
-                                    {{ $errors->first('activation') }}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                @endif
-
-            </div>
-            <main>
-                {{ $slot }}
-            </main>
+    {{-- ===================== TOP NAV ===================== --}}
+    <header class="fixed top-0 w-full h-14 z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-100 dark:border-slate-800 flex items-center justify-between px-4">
+        <div class="flex items-center gap-4">
+            <span class="text-xl font-black text-blue-600 dark:text-blue-400 tracking-tight">SimpleNote</span>
         </div>
-    </body>
+
+        <div class="hidden md:flex flex-1 max-w-xl mx-8 relative">
+            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
+            <input data-search-input type="text" placeholder="Tìm kiếm ghi chú..."
+                class="w-full pl-10 pr-4 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all dark:text-white"/>
+        </div>
+
+        <div class="flex items-center gap-3 relative">
+            <button onclick="document.getElementById('userMenu').classList.toggle('hidden')" class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold">
+                    {{ substr(Auth::user()->display_name ?? 'U', 0, 1) }}
+                </div>
+            </button>
+            <div id="userMenu" class="hidden absolute right-0 top-11 bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 w-48 overflow-hidden z-50">
+                <a href="{{ route('appearance.edit') }}" class="block px-4 py-3 text-sm hover:bg-slate-50 dark:hover:bg-slate-700">Cài đặt giao diện</a>
+                <form method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    <button type="submit" class="w-full text-left px-4 py-3 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-slate-700">Đăng xuất</button>
+                </form>
+            </div>
+        </div>
+    </header>
+
+    {{-- ===================== LAYOUT ===================== --}}
+    <div class="flex pt-14 h-screen">
+
+        {{-- ===================== SIDEBAR ===================== --}}
+        <aside class="w-60 bg-white dark:bg-slate-900 border-r border-slate-100 dark:border-slate-800 hidden md:flex flex-col p-4 flex-shrink-0 space-y-4 overflow-y-auto">
+
+            {{-- Nút tạo ghi chú mới --}}
+            <button onclick="if(typeof openCreateForm === 'function') { openCreateForm(); } else { window.location.href='{{ route('dashboard') }}'; }"
+                class="w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold text-sm shadow-md flex items-center justify-center gap-2 transition-all">
+                <span class="material-symbols-outlined">add</span> Ghi chú mới
+            </button>
+
+            {{-- Nav: Tất cả ghi chú --}}
+            <nav>
+                <a href="{{ route('dashboard') }}"
+                    onclick="if(typeof filterByLabel === 'function') { event.preventDefault(); filterByLabel('all'); }"
+                    class="flex items-center gap-3 px-3 py-2 text-blue-700 bg-blue-50 dark:bg-slate-800 dark:text-blue-400 rounded-lg font-medium text-sm">
+                    <span class="material-symbols-outlined">description</span> Tất cả ghi chú
+                </a>
+            </nav>
+
+            {{-- ===== DANH SÁCH NHÃN (MULTI-CHOICE LỌC) ===== --}}
+            <div class="border-t border-slate-100 dark:border-slate-800 pt-4">
+                <h3 class="px-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3 flex justify-between items-center">
+                    Nhãn
+                    <button onclick="document.getElementById('addLabelModal').classList.remove('hidden')"
+                        class="hover:text-blue-500 transition-colors">
+                        <span class="material-symbols-outlined text-sm">add</span>
+                    </button>
+                </h3>
+
+                <div class="space-y-1" id="sidebarLabelList">
+
+                </div>
+            </div>
+        </aside>
+
+        {{-- ===================== MAIN CONTENT ===================== --}}
+        <main class="flex-1 overflow-y-auto p-4 md:p-8 bg-slate-50 dark:bg-slate-950">
+            {{ $slot }}
+        </main>
+    </div>
+
+    {{-- ===================== MODAL THÊM NHÃN ===================== --}}
+    <div id="addLabelModal" class="hidden fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-xl shadow-xl w-full max-w-sm p-5">
+            <h3 class="font-bold mb-4 dark:text-white">Tạo Nhãn Mới</h3>
+            <form action="{{ route('labels.store') }}" method="POST">
+                @csrf
+                <input type="text" name="name" required
+                    class="w-full border border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-white rounded-lg p-2 mb-3 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Tên nhãn (Phân biệt hoa/thường)...">
+                <div class="flex items-center gap-3 mb-4">
+                    <label class="text-sm dark:text-slate-300">Màu nhãn:</label>
+                    <input type="color" name="color" value="#3b82f6" class="w-8 h-8 rounded cursor-pointer border-0 p-0">
+                </div>
+                <div class="flex justify-end gap-2">
+                    <button type="button"
+                        onclick="document.getElementById('addLabelModal').classList.add('hidden')"
+                        class="px-4 py-2 text-sm text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg">Hủy</button>
+                    <button type="submit" class="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700">Thêm</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {{-- ===================== MODAL SỬA / XÓA NHÃN ===================== --}}
+    <div id="editLabelModal" class="hidden fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-xl shadow-xl w-full max-w-sm p-5">
+            <h3 class="font-bold mb-4 dark:text-white">Sửa Nhãn</h3>
+            <form id="editLabelForm" method="POST">
+                @csrf
+                @method('PUT')
+                <input type="text" id="editLabelName" name="name" required
+                    class="w-full border border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-white rounded-lg p-2 mb-3 text-sm outline-none focus:ring-2 focus:ring-blue-500">
+                <div class="flex items-center gap-3 mb-4">
+                    <label class="text-sm dark:text-slate-300">Màu nhãn:</label>
+                    <input type="color" id="editLabelColor" name="color" class="w-8 h-8 rounded cursor-pointer border-0 p-0">
+                </div>
+                <div class="flex justify-between items-center">
+                    <button type="button" onclick="deleteLabel()"
+                        class="text-sm text-red-500 hover:text-red-700 font-medium">Xóa nhãn</button>
+                    <div class="flex gap-2">
+                        <button type="button"
+                            onclick="document.getElementById('editLabelModal').classList.add('hidden')"
+                            class="px-4 py-2 text-sm text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg">Hủy</button>
+                        <button type="submit" class="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700">Lưu</button>
+                    </div>
+                </div>
+            </form>
+            {{-- Form xóa ẩn --}}
+            <form id="deleteLabelForm" method="POST" class="hidden">
+                @csrf
+                @method('DELETE')
+            </form>
+        </div>
+    </div>
+
+    {{-- ===================== SCRIPTS ===================== --}}
+    <script>
+        // Đóng userMenu khi click ra ngoài
+        document.addEventListener('click', function(e) {
+            const menu = document.getElementById('userMenu');
+            if (menu && !menu.classList.contains('hidden') && !e.target.closest('[onclick*="userMenu"]')) {
+                menu.classList.add('hidden');
+            }
+        });
+
+        // Mở/đóng modal nhãn khi click vùng nền
+        ['addLabelModal', 'editLabelModal'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.addEventListener('click', function(e) {
+                if (e.target === this) this.classList.add('hidden');
+            });
+        });
+
+        // Hàm mở modal sửa nhãn — được gọi từ sidebar
+        function openEditLabelModal(id, name, color) {
+            document.getElementById('editLabelName').value = name;
+            document.getElementById('editLabelColor').value = color;
+            document.getElementById('editLabelForm').action = `/labels/${id}`;
+            document.getElementById('deleteLabelForm').action = `/labels/${id}`;
+            document.getElementById('editLabelModal').classList.remove('hidden');
+        }
+
+        // Hàm xóa nhãn
+        function deleteLabel() {
+            if (confirm('Bạn có chắc chắn muốn xóa nhãn này? Các ghi chú sẽ không bị xóa.')) {
+                document.getElementById('deleteLabelForm').submit();
+            }
+        }
+
+        @if(session('error'))
+            alert('{{ session('error') }}');
+        @endif
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            if (window.NoteLabels && window.NoteLabels.length > 0) {
+                const container = document.getElementById('sidebarLabelList');
+                if (container) {
+                    container.innerHTML = window.NoteLabels.map(label => `
+                        <div class="flex items-center justify-between group px-2 py-1.5 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg transition-colors">
+                            <label class="flex items-center gap-2 cursor-pointer truncate flex-1 min-w-0">
+                                <input type="checkbox" value="${label.id}" onchange="if(typeof toggleLabelFilter === 'function') toggleLabelFilter(this)" class="rounded border-slate-300 text-blue-600 shadow-sm focus:ring-blue-500 bg-white flex-shrink-0">
+                                <span class="w-3 h-3 rounded-full flex-shrink-0" style="background-color: ${label.color}"></span>
+                                <span class="text-sm text-slate-700 dark:text-slate-300 truncate">${label.name}</span>
+                            </label>
+                            <button type="button" onclick="openEditLabelModal(${label.id}, '${label.name.replace(/'/g, "\\'")}', '${label.color}')" class="hidden group-hover:flex items-center text-slate-400 hover:text-blue-600 p-1 flex-shrink-0 transition-colors" title="Sửa nhãn">
+                                <span class="material-symbols-outlined text-[16px]">edit</span>
+                            </button>
+                        </div>
+                    `).join('');
+                }
+            }
+        });
+    </script>
+
+</body>
 </html>

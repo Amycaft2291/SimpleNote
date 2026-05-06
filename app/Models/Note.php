@@ -2,50 +2,29 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-/**
- * @property int $id
- * @property string $title
- * @property string|null $content
- * @property string|null $password
- * @property int created_by // created by user
- */
 class Note extends Model
 {
-    protected $table = 'notes';
-    protected $primaryKey = 'id';
-    protected $keyType = 'int';
-    public $incrementing = true;
+    use HasFactory;
 
-    protected $fillable = [
-        'title',
-        'content',
-        'password',
-        'created_by'
-    ];
+    // Cho phép insert tất cả các cột
+    protected $guarded = []; 
 
-    protected function casts(): array
+    /**
+     * Quan hệ Nhiều - Nhiều với bảng Label thông qua bảng trung gian note_label
+     */
+    public function labels()
     {
-        return [
-            'password' => 'hashed',
-        ];
+        return $this->belongsToMany(Label::class, 'note_label');
     }
 
-    public static function make(string $title, ?string $content = null, ?string $password = null, int $userId): static
+    /**
+     * Quan hệ Một - Nhiều với bảng NoteImage
+     */
+    public function images()
     {
-        return new static ([
-            'title' => $title,
-            'content' => $content,
-            'password' => $password,
-            'created_by' => $userId
-        ]);
-    }
-
-    // mối quan hệ
-    public function createdByUser(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'created_by', 'id');
+        return $this->hasMany(NoteImage::class);
     }
 }

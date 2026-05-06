@@ -2,8 +2,6 @@
 
 use App\Http\Controllers\NoteController;
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\AppearanceController;
-use App\Http\Controllers\LabelController;
 use Illuminate\Support\Facades\Route;
 use App\Models\User;
 
@@ -12,7 +10,7 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-// ─── Dashboard, Notes, Appearance & Labels (Cần Auth) ─────────────────────────
+// ─── Dashboard & Notes (cần auth) ─────────────────────────────────────────────
 Route::middleware(['auth'])->group(function () {
 
     // Dashboard — hiển thị tất cả ghi chú
@@ -23,17 +21,10 @@ Route::middleware(['auth'])->group(function () {
     Route::put   ('/notes/{note}',       [NoteController::class, 'update'])->name('notes.update');
     Route::delete('/notes/{note}',       [NoteController::class, 'destroy'])->name('notes.destroy');
     Route::patch ('/notes/{note}/pin',   [NoteController::class, 'togglePin'])->name('notes.pin');
+});
 
-    // Quản lý Giao diện (Appearance)
-    Route::get  ('/settings/appearance', [AppearanceController::class, 'edit'])->name('appearance.edit');
-    Route::patch('/settings/appearance', [AppearanceController::class, 'update'])->name('appearance.update');
-
-    // Quản lý Nhãn (Labels)
-    Route::post ('/labels',             [LabelController::class, 'store'])->name('labels.store');
-    Route::put('/labels/{label}',       [LabelController::class, 'update'])->name('labels.update');
-    Route::delete('/labels/{label}',    [LabelController::class, 'destroy'])->name('labels.destroy');
-
-    // Profile
+// ─── Profile ──────────────────────────────────────────────────────────────────
+Route::middleware('auth')->group(function () {
     Route::get   ('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch ('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');

@@ -24,6 +24,7 @@ return new class extends Migration
         Schema::create('labels', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->string('color')->default('#3b82f6'); // <-- Bổ sung dòng này
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->timestamps();
         });
