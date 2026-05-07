@@ -40,7 +40,6 @@ class NoteController extends Controller
             'images.*'    => 'file|image|max:5120',
         ]);
 
-        // Đã gỡ bỏ 'color' vì DB của bạn không có cột này
         $note = Note::create([
             'title'   => $validated['title'],
             'content' => $validated['content'] ?? '',
