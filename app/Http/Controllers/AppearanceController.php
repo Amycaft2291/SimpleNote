@@ -15,12 +15,10 @@ class AppearanceController extends Controller
 
     public function update(Request $request)
     {
-        $allowedColors = ['#ffffff', '#fef9c3', '#dcfce7', '#e0f2fe', '#fee2e2', '#f3f4f6', '#1e293b'];
-
         $validated = $request->validate([
             'theme'      => 'required|in:light,dark,system',
             'font_size'  => 'required|integer|min:12|max:24',
-            'note_color' => 'nullable|in:' . implode(',', $allowedColors),
+            'note_color' => 'nullable|string|max:20',
         ]);
 
         $request->user()->update($validated);
