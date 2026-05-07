@@ -9,7 +9,7 @@ use App\Models\User;
 
 // ─── Trang Welcome ────────────────────────────────────────────────────────────
 Route::get('/', function () {
-    return view('welcome');
+    return redirect()->route('login');
 });
 
 // ─── Dashboard, Notes, Appearance & Labels (Cần Auth) ─────────────────────────
