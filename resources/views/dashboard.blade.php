@@ -68,8 +68,15 @@
         {{--lưới gchu--}}
         <div id="notesContainer" class="masonry-grid">
             @forelse($notes as $note)
+                @php
+                    $currColor = $note->color ?? auth()->user()->note_color ?? '#ffffff';
+                    $isDarkBg = ($currColor === '#1e293b');
+                    $textClass = $isDarkBg ? 'text-white' : 'dark:text-white text-slate-900';
+                    $contentClass = $isDarkBg ? 'text-slate-200' : 'dark:text-slate-300 text-slate-600';
+                @endphp
                 <div class="masonry-item group cursor-pointer note-card" 
                     data-id="{{ $note->id }}" 
+                    data-color="{{ $currColor }}"
                     data-title="{{ e($note->title) }}"
                     data-content="{{ e($note->content) }}"
                     data-labels="{{ $note->labels->pluck('id')->join(',') }}"
@@ -79,7 +86,8 @@
                     data-created-at="{{ $note->created_at->diffForHumans() }}"
                     onclick="openEditModal(this)">
                     
-                    <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden relative shadow-sm hover:shadow-md transition-all">
+                    <div class="rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden relative shadow-sm hover:shadow-md transition-all"
+                        style="background-color: {{ $currColor }}">
                         {{--nút ghim--}}
                         <button 
                             onclick="event.stopPropagation(); pinNote(this, {{ $note->id }})"
@@ -90,9 +98,9 @@
                         </button>
 
                         @if($note->images->count() > 0)
-                        <div class="w-full h-40 overflow-hidden bg-slate-100 dark:bg-slate-700">
-                            <img src="{{ asset('storage/' . $note->images->first()->image_path) }}" class="w-full h-full object-cover">
-                        </div>
+                            <div class="w-full h-40 overflow-hidden bg-slate-100 dark:bg-slate-700">
+                                <img src="{{ asset('storage/' . $note->images->first()->image_path) }}" class="w-full h-full object-cover">
+                            </div>
                         @endif
 
                         <div class="p-4">
@@ -105,19 +113,20 @@
                                     {{ $note->created_at->diffForHumans() }}
                                 </div>
                             </div>
-                            @if($note->title)
-                            <h2 class="note-title font-bold mb-1 dark:text-white leading-snug">{{ $note->title }}</h2>
-                            @else
-                            <h2 class="note-title hidden"></h2>
-                            @endif
-                            <p class="note-content line-clamp-5 text-sm text-slate-600 dark:text-slate-300 leading-relaxed">{{ $note->content }}</p>
                             
+                            @if($note->title)
+                                <h2 class="note-title font-bold mb-1 {{ $textClass }} leading-snug">{{ $note->title }}</h2>
+                            @else
+                                <h2 class="note-title hidden"></h2>
+                            @endif
+                            
+                            <p class="note-content line-clamp-5 text-sm {{ $contentClass }} leading-relaxed">{{ $note->content }}</p>
                             @if($note->labels->count() > 0)
-                            <div class="flex flex-wrap gap-1 mt-3">
-                                @foreach($note->labels as $lbl)
-                                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full text-white" style="background-color: {{ $lbl->color }}">{{ $lbl->name }}</span>
-                                @endforeach
-                            </div>
+                                <div class="flex flex-wrap gap-1 mt-3">
+                                    @foreach($note->labels as $lbl)
+                                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full text-white" style="background-color: {{ $lbl->color }}">{{ $lbl->name }}</span>
+                                    @endforeach
+                                </div>
                             @endif
                         </div>
                     </div>
@@ -170,14 +179,28 @@
                         <div class="flex flex-wrap gap-2" id="editLabelsContainer">
                             @isset($labels)
                                 @foreach($labels as $label)
-                                <label class="flex items-center gap-1.5 text-xs bg-slate-100 dark:bg-slate-700 dark:text-slate-300 px-2 py-1 rounded-lg cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors has-[:checked]:bg-blue-100 has-[:checked]:text-blue-700 dark:has-[:checked]:bg-blue-900/40 dark:has-[:checked]:text-blue-300 has-[:checked]:ring-1 has-[:checked]:ring-blue-400">
-                                    <input type="checkbox" value="{{ $label->id }}" class="edit-label-cb rounded border-slate-300 text-blue-600 focus:ring-blue-500">
-                                    <span class="w-2.5 h-2.5 rounded-full flex-shrink-0" style="background-color: {{ $label->color }}"></span>
-                                    {{ $label->name }}
-                                </label>
+                                    <label class="flex items-center gap-1.5 text-xs bg-slate-100 dark:bg-slate-700 dark:text-slate-300 px-2 py-1 rounded-lg cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors has-[:checked]:bg-blue-100 has-[:checked]:text-blue-700 dark:has-[:checked]:bg-blue-900/40 dark:has-[:checked]:text-blue-300 has-[:checked]:ring-1 has-[:checked]:ring-blue-400">
+                                        <input type="checkbox" value="{{ $label->id }}" class="edit-label-cb rounded border-slate-300 text-blue-600 focus:ring-blue-500">
+                                        <span class="w-2.5 h-2.5 rounded-full flex-shrink-0" style="background-color: {{ $label->color }}"></span>
+                                        {{ $label->name }}
+                                    </label>
                                 @endforeach
                             @endisset
                         </div>
+                    </div>
+                </div>
+
+                <div class="px-5 py-3 border-t border-slate-100 dark:border-slate-700">
+                    <p class="text-[10px] font-bold text-slate-400 uppercase mb-2">Màu nền</p>
+                    <div class="flex flex-wrap gap-2">
+                        @foreach(['#ffffff', '#fef9c3', '#dcfce7', '#e0f2fe', '#fee2e2', '#f3f4f6', '#1e293b'] as $c)
+                            <button type="button" 
+                                onclick="updateModalPreviewColor('{{ $c }}')"
+                                class="w-6 h-6 rounded-full border border-slate-200 hover:scale-110 transition-all" 
+                                style="background-color: {{ $c }}">
+                            </button>
+                        @endforeach
+                        <input type="hidden" id="editNoteColor">
                     </div>
                 </div>
 
@@ -225,6 +248,7 @@
             const formData = new FormData();
             formData.append('title', title || '(Không có tiêu đề)');
             formData.append('content', content);
+            formData.append('color', '{{ auth()->user()->note_color }}');
 
             const files = document.getElementById('newImages').files;
             for (let i = 0; i < files.length; i++) formData.append('images[]', files[i]);
