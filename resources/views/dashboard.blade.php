@@ -1,5 +1,5 @@
 <x-app-layout>
-{{-- KHUNG NHẬP GHI CHÚ NHANH --}}
+{{--khung nhập gchu nhanh--}}
 <div class="max-w-2xl mx-auto mb-10">
     <div id="createBar" class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 transition-all hover:shadow-md">
         <div id="createPlaceholder" class="flex items-center justify-between p-4 cursor-pointer text-slate-400" onclick="openCreateForm()">
@@ -39,7 +39,7 @@
     </div>
 </div>
 
-{{-- TOOLBAR TÙY CHỈNH HIỂN THỊ & SẮP XẾP --}}
+{{--toolbar tùy chỉnh hiển thị v sắp xếp--}}
 <div class="flex flex-wrap items-center justify-between mb-6 gap-4">
     <h1 class="text-2xl font-black dark:text-white" id="pageTitle">Tất cả ghi chú</h1>
     
@@ -64,7 +64,7 @@
     </div>
 </div>
 
-{{-- LƯỚI GHI CHÚ --}}
+{{--lưới gchu--}}
 <div id="notesContainer" class="masonry-grid">
     @forelse($notes as $note)
         <div class="masonry-item group cursor-pointer note-card" 
@@ -78,7 +78,7 @@
              onclick="openEditModal(this)">
             
             <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden relative shadow-sm hover:shadow-md transition-all">
-                {{-- Pin Button --}}
+                {{--nút ghim--}}
                 <button 
                     onclick="event.stopPropagation(); pinNote(this, {{ $note->id }})"
                     class="absolute top-2 right-2 z-10 p-1 rounded-full opacity-0 group-hover:opacity-100 transition-all
@@ -120,42 +120,40 @@
     @endforelse
 </div>
 
-{{-- ===================================================
-     MODAL CHỈNH SỬA / XÓA GHI CHÚ
-     =================================================== --}}
+{{--modal sửa/xóa gchu--}}
 <div id="editModal" class="hidden fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
     <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-xl overflow-hidden relative flex flex-col max-h-[90vh]">
         
         <div class="p-5 overflow-y-auto space-y-4 flex-1">
             <input type="hidden" id="editNoteId">
 
-            {{-- Tiêu đề --}}
+            {{--tiêu đề--}}
             <input id="editTitle" type="text" placeholder="Tiêu đề"
                 class="w-full font-bold text-xl bg-transparent border-none outline-none dark:text-white focus:ring-0 px-0">
             
-            {{-- Nội dung --}}
+            {{--nd--}}
             <textarea id="editContent" rows="5" placeholder="Nội dung ghi chú..."
                 class="w-full text-sm bg-transparent border-none outline-none resize-none dark:text-slate-300 focus:ring-0 px-0 leading-relaxed"></textarea>
             
-            {{-- === QUẢN LÝ ẢNH === --}}
+            {{--ảnh/img--}}
             <div class="border-t border-slate-100 dark:border-slate-700 pt-4">
                 <p class="text-xs font-bold text-slate-400 uppercase mb-3">Ảnh đính kèm</p>
                 
-                {{-- Danh sách ảnh hiện tại --}}
+                {{--ds ảnh hiện tại --}}
                 <div id="editImagesContainer" class="grid grid-cols-3 gap-2 mb-3"></div>
                 
-                {{-- Upload ảnh mới --}}
+                {{--upload ảnh mới --}}
                 <label class="flex items-center gap-2 cursor-pointer text-sm text-blue-600 hover:text-blue-700 font-medium">
                     <span class="material-symbols-outlined text-base">add_photo_alternate</span>
                     Thêm ảnh mới
                     <input type="file" id="editImagesInput" multiple accept="image/*" class="hidden" onchange="previewNewImages(this)">
                 </label>
                 
-                {{-- Preview ảnh mới --}}
+                {{--xem trc ảnh mới --}}
                 <div id="newImagesPreview" class="grid grid-cols-3 gap-2 mt-2"></div>
             </div>
 
-            {{-- === QUẢN LÝ NHÃN === --}}
+            {{--nhãn/tag--}}
             <div class="border-t border-slate-100 dark:border-slate-700 pt-4">
                 <p class="text-xs font-bold text-slate-400 uppercase mb-3">Gán Nhãn</p>
                 <div class="flex flex-wrap gap-2" id="editLabelsContainer">
@@ -190,17 +188,13 @@ const CSRF = document.querySelector('meta[name="csrf-token"]').content;
 
 window.NoteLabels = @json($labels ?? []);
 
-/* ==========================================
-   1. BIẾN TOÀN CỤC & TRẠNG THÁI
-   ========================================== */
+/*biến toàn cục vs trạng thái*/
 let selectedLabels = [];
 let removeImageIds = [];
 let currentSortOrder = 'newest';
 let newSelectedFiles = [];
 
-/* ==========================================
-   2. THÊM GHI CHÚ MỚI
-   ========================================== */
+/*thêm gchu*/
 function openCreateForm() {
     document.getElementById('createPlaceholder').classList.add('hidden');
     document.getElementById('createForm').classList.remove('hidden');
@@ -246,22 +240,20 @@ async function saveNote() {
     }
 }
 
-/* ==========================================
-   3. SỬA VÀ XÓA GHI CHÚ
-   ========================================== */
+/*sửa/xóa gchu*/
 function openEditModal(card) {
-    // Ngăn mở modal khi bấm nút pin
+    //chuyển nd từ note lên modal
     document.getElementById('editNoteId').value = card.dataset.id;
     document.getElementById('editTitle').value = card.dataset.title;
     document.getElementById('editContent').value = card.dataset.content;
 
-    // Check lại nhãn
+    //ktra tag htại của note
     const noteLabels = card.dataset.labels ? card.dataset.labels.split(',') : [];
     document.querySelectorAll('.edit-label-cb').forEach(cb => {
         cb.checked = noteLabels.includes(cb.value);
     });
 
-    // Render ảnh hiện tại
+    //chuyển dữ liệu ảnh của note khác trong lần chỉnh sửa trước sang note cần sửa hiện tại
     removeImageIds = [];
     newSelectedFiles = [];
     const images = JSON.parse(card.dataset.images || '[]');
@@ -284,7 +276,7 @@ function openEditModal(card) {
         imgContainer.appendChild(div);
     });
 
-    // Reset preview ảnh mới
+    //reset phần thêm ảnh trong trường hợp chưa lưu lại edit trước trong note (cũ lẫn mới)
     document.getElementById('editImagesInput').value = '';
     document.getElementById('newImagesPreview').innerHTML = '';
 

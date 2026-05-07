@@ -8,7 +8,6 @@ return new class extends Migration
 {
     public function up(): void
     {
-        // Bảng ghi chú [cite: 181]
         Schema::create('notes', function (Blueprint $table) {
             $table->id();
             $table->string('title');
@@ -20,7 +19,6 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        // Bảng nhãn [cite: 183]
         Schema::create('labels', function (Blueprint $table) {
             $table->id();
             $table->string('name');
@@ -29,14 +27,12 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        // Bảng trung gian Ghi chú - Nhãn [cite: 184]
         Schema::create('note_label', function (Blueprint $table) {
             $table->id();
             $table->foreignId('note_id')->constrained()->onDelete('cascade');
             $table->foreignId('label_id')->constrained()->onDelete('cascade');
         });
 
-        // Bảng chia sẻ ghi chú [cite: 185]
         Schema::create('note_shares', function (Blueprint $table) {
             $table->id();
             $table->foreignId('note_id')->constrained()->onDelete('cascade');
@@ -45,7 +41,6 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        // Bảng ảnh đính kèm [cite: 186]
         Schema::create('note_images', function (Blueprint $table) {
             $table->id();
             $table->foreignId('note_id')->constrained()->onDelete('cascade');

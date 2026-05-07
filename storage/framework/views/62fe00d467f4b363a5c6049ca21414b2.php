@@ -112,4 +112,4 @@ unset($__errorArgs, $__bag); ?>
 </div>
 
 </body>
-</html><?php /**PATH D:\Coding\Composer\note-app\resources\views/auth/login.blade.php ENDPATH**/ ?>
+</html><?php /**PATH D:\Web\Composer\SimpleNote\resources\views/auth/login.blade.php ENDPATH**/ ?>
