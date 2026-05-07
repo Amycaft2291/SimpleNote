@@ -1,5 +1,14 @@
-<x-app-layout>
-{{--khung nhập gchu nhanh--}}
+<?php if (isset($component)) { $__componentOriginal9ac128a9029c0e4701924bd2d73d7f54 = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginal9ac128a9029c0e4701924bd2d73d7f54 = $attributes; } ?>
+<?php $component = App\View\Components\AppLayout::resolve([] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('app-layout'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\App\View\Components\AppLayout::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes([]); ?>
+
 <div class="max-w-2xl mx-auto mb-10">
     <div id="createBar" class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 transition-all hover:shadow-md">
         <div id="createPlaceholder" class="flex items-center justify-between p-4 cursor-pointer text-slate-400" onclick="openCreateForm()">
@@ -19,15 +28,16 @@
             <div class="border-t border-slate-100 dark:border-slate-700 pt-3">
                 <p class="text-xs font-bold text-slate-400 uppercase mb-2">Gán Nhãn</p>
                 <div class="flex flex-wrap gap-2">
-                    @isset($labels)
-                        @foreach($labels as $label)
+                    <?php if(isset($labels)): ?>
+                        <?php $__currentLoopData = $labels; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $label): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                         <label class="flex items-center gap-1.5 text-xs bg-slate-100 dark:bg-slate-700 dark:text-slate-300 px-2 py-1 rounded-lg cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">
-                            <input type="checkbox" value="{{ $label->id }}" class="new-label-cb rounded border-slate-300 text-blue-600 shadow-sm focus:ring-blue-500">
-                            <span class="w-2 h-2 rounded-full flex-shrink-0" style="background-color: {{ $label->color }}"></span>
-                            {{ $label->name }}
+                            <input type="checkbox" value="<?php echo e($label->id); ?>" class="new-label-cb rounded border-slate-300 text-blue-600 shadow-sm focus:ring-blue-500">
+                            <span class="w-2 h-2 rounded-full flex-shrink-0" style="background-color: <?php echo e($label->color); ?>"></span>
+                            <?php echo e($label->name); ?>
+
                         </label>
-                        @endforeach
-                    @endisset
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                    <?php endif; ?>
                 </div>
             </div>
 
@@ -39,12 +49,12 @@
     </div>
 </div>
 
-{{--toolbar tùy chỉnh hiển thị v sắp xếp--}}
+
 <div class="flex flex-wrap items-center justify-between mb-6 gap-4">
     <h1 class="text-2xl font-black dark:text-white" id="pageTitle">Tất cả ghi chú</h1>
     
     <div class="flex items-center gap-3 bg-white dark:bg-slate-800 p-1.5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
-        {{-- Sắp xếp --}}
+        
         <div class="flex items-center border-r border-slate-100 dark:border-slate-700 pr-2 mr-2">
             <button onclick="toggleSortOrder()" id="sortBtn" title="Đổi thứ tự sắp xếp" class="p-1.5 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-lg flex items-center gap-1 transition-all">
                 <span class="material-symbols-outlined text-sm" id="sortIcon">south</span>
@@ -52,7 +62,7 @@
             </button>
         </div>
 
-        {{-- Grid/List View --}}
+        
         <div class="flex gap-1">
             <button id="gridBtn" onclick="setView('grid')" class="p-1.5 rounded-lg transition-all" title="Chế độ lưới">
                 <span class="material-symbols-outlined text-sm">grid_view</span>
@@ -64,123 +74,114 @@
     </div>
 </div>
 
-{{--lưới gchu--}}
+
 <div id="notesContainer" class="masonry-grid">
-    @forelse($notes as $note)
+    <?php $__empty_1 = true; $__currentLoopData = $notes; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $note): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
         <div class="masonry-item group cursor-pointer note-card" 
-             data-id="{{ $note->id }}" 
-             data-title="{{ e($note->title) }}"
-             data-content="{{ e($note->content) }}"
-             data-labels="{{ $note->labels->pluck('id')->join(',') }}"
-             data-images="{{ $note->images->toJson() }}"
-             data-pinned="{{ $note->is_pinned ? 1 : 0 }}"
-             data-timestamp="{{ $note->updated_at->timestamp }}"
-             data-created-at="{{ $note->created_at->diffForHumans() }}"
+             data-id="<?php echo e($note->id); ?>" 
+             data-title="<?php echo e(e($note->title)); ?>"
+             data-content="<?php echo e(e($note->content)); ?>"
+             data-labels="<?php echo e($note->labels->pluck('id')->join(',')); ?>"
+             data-images="<?php echo e($note->images->toJson()); ?>"
+             data-pinned="<?php echo e($note->is_pinned ? 1 : 0); ?>"
+             data-timestamp="<?php echo e($note->updated_at->timestamp); ?>"
              onclick="openEditModal(this)">
             
             <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden relative shadow-sm hover:shadow-md transition-all">
-                {{--nút ghim--}}
+                
                 <button 
-                    onclick="event.stopPropagation(); pinNote(this, {{ $note->id }})"
+                    onclick="event.stopPropagation(); pinNote(this, <?php echo e($note->id); ?>)"
                     class="absolute top-2 right-2 z-10 p-1 rounded-full opacity-0 group-hover:opacity-100 transition-all
-                    {{ $note->is_pinned ? '!opacity-100 text-yellow-500' : 'text-slate-400 hover:text-yellow-500 bg-white/80 dark:bg-slate-800/80' }}"
-                    title="{{ $note->is_pinned ? 'Bỏ ghim' : 'Ghim ghi chú' }}">
-                    <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' {{ $note->is_pinned ? 1 : 0 }}, 'wght' 400, 'GRAD' 0, 'opsz' 24;">push_pin</span>
+                    <?php echo e($note->is_pinned ? '!opacity-100 text-yellow-500' : 'text-slate-400 hover:text-yellow-500 bg-white/80 dark:bg-slate-800/80'); ?>"
+                    title="<?php echo e($note->is_pinned ? 'Bỏ ghim' : 'Ghim ghi chú'); ?>">
+                    <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' <?php echo e($note->is_pinned ? 1 : 0); ?>, 'wght' 400, 'GRAD' 0, 'opsz' 24;">push_pin</span>
                 </button>
 
-                @if($note->images->count() > 0)
+                <?php if($note->images->count() > 0): ?>
                 <div class="w-full h-40 overflow-hidden bg-slate-100 dark:bg-slate-700">
-                    <img src="{{ asset('storage/' . $note->images->first()->image_path) }}" class="w-full h-full object-cover">
+                    <img src="<?php echo e(asset('storage/' . $note->images->first()->image_path)); ?>" class="w-full h-full object-cover">
                 </div>
-                @endif
+                <?php endif; ?>
 
                 <div class="p-4">
-                    <div class="mt-3 pt-3 border-t border-slate-100 dark:border-slate-700 flex justify-between items-center text-[10px] text-slate-400 font-medium">
-                        <div class="flex items-center gap-1">
-                            <span class="material-symbols-outlined text-xs">calendar_today</span>
-                            {{ $note->created_at->format('d/m/Y') }}
-                        </div>
-                        <div class="italic">
-                            {{ $note->created_at->diffForHumans() }}
-                        </div>
-                    </div>
-                    @if($note->title)
-                    <h2 class="note-title font-bold mb-1 dark:text-white leading-snug">{{ $note->title }}</h2>
-                    @else
+                    <?php if($note->title): ?>
+                    <h2 class="note-title font-bold mb-1 dark:text-white leading-snug"><?php echo e($note->title); ?></h2>
+                    <?php else: ?>
                     <h2 class="note-title hidden"></h2>
-                    @endif
-                    <p class="note-content line-clamp-5 text-sm text-slate-600 dark:text-slate-300 leading-relaxed">{{ $note->content }}</p>
+                    <?php endif; ?>
+                    <p class="note-content line-clamp-5 text-sm text-slate-600 dark:text-slate-300 leading-relaxed"><?php echo e($note->content); ?></p>
                     
-                    @if($note->labels->count() > 0)
+                    <?php if($note->labels->count() > 0): ?>
                     <div class="flex flex-wrap gap-1 mt-3">
-                        @foreach($note->labels as $lbl)
-                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full text-white" style="background-color: {{ $lbl->color }}">{{ $lbl->name }}</span>
-                        @endforeach
+                        <?php $__currentLoopData = $note->labels; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $lbl): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full text-white" style="background-color: <?php echo e($lbl->color); ?>"><?php echo e($lbl->name); ?></span>
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                     </div>
-                    @endif
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
-    @empty
+    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
         <div class="col-span-4 text-center py-20 text-slate-400">
             <span class="material-symbols-outlined text-6xl mb-4 block">note_stack</span>
             <p class="text-lg font-medium">Chưa có ghi chú nào</p>
             <p class="text-sm mt-1">Bấm "Tạo ghi chú mới" để bắt đầu!</p>
         </div>
-    @endforelse
+    <?php endif; ?>
 </div>
 
-{{--modal sửa/xóa gchu--}}
+
 <div id="editModal" class="hidden fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
     <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-xl overflow-hidden relative flex flex-col max-h-[90vh]">
         
         <div class="p-5 overflow-y-auto space-y-4 flex-1">
             <input type="hidden" id="editNoteId">
 
-            {{--tiêu đề--}}
+            
             <input id="editTitle" type="text" placeholder="Tiêu đề"
                 class="w-full font-bold text-xl bg-transparent border-none outline-none dark:text-white focus:ring-0 px-0">
             
-            {{--nd--}}
+            
             <textarea id="editContent" rows="5" placeholder="Nội dung ghi chú..."
                 class="w-full text-sm bg-transparent border-none outline-none resize-none dark:text-slate-300 focus:ring-0 px-0 leading-relaxed"></textarea>
             
-            {{--ảnh/img--}}
+            
             <div class="border-t border-slate-100 dark:border-slate-700 pt-4">
                 <p class="text-xs font-bold text-slate-400 uppercase mb-3">Ảnh đính kèm</p>
                 
-                {{--ds ảnh hiện tại --}}
+                
                 <div id="editImagesContainer" class="grid grid-cols-3 gap-2 mb-3"></div>
                 
-                {{--upload ảnh mới --}}
+                
                 <label class="flex items-center gap-2 cursor-pointer text-sm text-blue-600 hover:text-blue-700 font-medium">
                     <span class="material-symbols-outlined text-base">add_photo_alternate</span>
                     Thêm ảnh mới
                     <input type="file" id="editImagesInput" multiple accept="image/*" class="hidden" onchange="previewNewImages(this)">
                 </label>
                 
-                {{--xem trc ảnh mới --}}
+                
                 <div id="newImagesPreview" class="grid grid-cols-3 gap-2 mt-2"></div>
             </div>
 
-            {{--nhãn/tag--}}
+            
             <div class="border-t border-slate-100 dark:border-slate-700 pt-4">
                 <p class="text-xs font-bold text-slate-400 uppercase mb-3">Gán Nhãn</p>
                 <div class="flex flex-wrap gap-2" id="editLabelsContainer">
-                    @isset($labels)
-                        @foreach($labels as $label)
+                    <?php if(isset($labels)): ?>
+                        <?php $__currentLoopData = $labels; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $label): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                         <label class="flex items-center gap-1.5 text-xs bg-slate-100 dark:bg-slate-700 dark:text-slate-300 px-2 py-1 rounded-lg cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors has-[:checked]:bg-blue-100 has-[:checked]:text-blue-700 dark:has-[:checked]:bg-blue-900/40 dark:has-[:checked]:text-blue-300 has-[:checked]:ring-1 has-[:checked]:ring-blue-400">
-                            <input type="checkbox" value="{{ $label->id }}" class="edit-label-cb rounded border-slate-300 text-blue-600 focus:ring-blue-500">
-                            <span class="w-2.5 h-2.5 rounded-full flex-shrink-0" style="background-color: {{ $label->color }}"></span>
-                            {{ $label->name }}
+                            <input type="checkbox" value="<?php echo e($label->id); ?>" class="edit-label-cb rounded border-slate-300 text-blue-600 focus:ring-blue-500">
+                            <span class="w-2.5 h-2.5 rounded-full flex-shrink-0" style="background-color: <?php echo e($label->color); ?>"></span>
+                            <?php echo e($label->name); ?>
+
                         </label>
-                        @endforeach
-                    @endisset
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
 
-        {{-- Footer actions --}}
+        
         <div class="px-5 py-3 bg-slate-50 dark:bg-slate-900/50 border-t border-slate-100 dark:border-slate-700 flex justify-between items-center">
             <button onclick="deleteNote()" class="text-sm text-red-500 hover:text-red-700 font-medium flex items-center gap-1">
                 <span class="material-symbols-outlined text-base">delete</span> Xóa
@@ -196,7 +197,7 @@
 <script>
 const CSRF = document.querySelector('meta[name="csrf-token"]').content;
 
-window.NoteLabels = @json($labels ?? []);
+window.NoteLabels = <?php echo json_encode($labels ?? [], 15, 512) ?>;
 
 /*biến toàn cục vs trạng thái*/
 let selectedLabels = [];
@@ -233,7 +234,7 @@ async function saveNote() {
     });
 
     try {
-        const res = await fetch('{{ route("notes.store") }}', {
+        const res = await fetch('<?php echo e(route("notes.store")); ?>', {
             method: 'POST',
             headers: { 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json' },
             body: formData
@@ -511,4 +512,13 @@ document.addEventListener('DOMContentLoaded', () => {
     sortNotes();
 });
 </script>
-</x-app-layout>
+ <?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginal9ac128a9029c0e4701924bd2d73d7f54)): ?>
+<?php $attributes = $__attributesOriginal9ac128a9029c0e4701924bd2d73d7f54; ?>
+<?php unset($__attributesOriginal9ac128a9029c0e4701924bd2d73d7f54); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginal9ac128a9029c0e4701924bd2d73d7f54)): ?>
+<?php $component = $__componentOriginal9ac128a9029c0e4701924bd2d73d7f54; ?>
+<?php unset($__componentOriginal9ac128a9029c0e4701924bd2d73d7f54); ?>
+<?php endif; ?><?php /**PATH D:\Web\Composer\SimpleNote\resources\views/dashboard.blade.php ENDPATH**/ ?>
