@@ -1,52 +1,120 @@
-<x-guest-layout>
-    <form method="POST" action="{{ route('register') }}">
-        @csrf
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SimpleNote — Create Account</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
 
-        <!-- Name -->
-        <div>
-            <x-input-label for="name" :value="__('Name')" />
-            <x-text-input id="name" class="block mt-1 w-full" type="text" name="name" :value="old('name')" required autofocus autocomplete="name" />
-            <x-input-error :messages="$errors->get('name')" class="mt-2" />
+    <link rel="stylesheet" href="{{ asset('css/auth/style_LoginAndRegister.css') }}">
+</head>
+<body>
+
+<div class="card">
+    <!-- Left decorative panel -->
+    <div class="panel-left">
+        <div class="brand">
+            <div class="brand-icon">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2C6.48 2 2 5.58 2 10c0 2.56 1.36 4.84 3.5 6.37V20l3.5-2.1c.96.22 1.96.35 3 .35 5.52 0 10-3.58 10-8S17.52 2 12 2z"/>
+                </svg>
+            </div>
+            <span class="brand-name">SimpleNote</span>
         </div>
 
-        <!-- Email Address -->
-        <div class="mt-4">
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autocomplete="username" />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
+        <div class="perks">
+            <div class="perk"><span class="perk-dot"></span>Free forever, no credit card needed</div>
+            <div class="perk"><span class="perk-dot"></span>Sync notes across all your devices</div>
+            <div class="perk"><span class="perk-dot"></span>Light & dark themes, custom fonts</div>
+            <div class="perk"><span class="perk-dot"></span>Password reset via email or OTP</div>
+        </div>
+    </div>
+
+    <!-- Right form panel -->
+    <div class="panel-right">
+        <button class="close-btn" aria-label="Close">✕</button>
+
+        <h1>Welcome!</h1>
+        <p class="subtitle">Register now, it's free!</p>
+
+        <div class="dots">
+            <span class="dot"></span>
+            <span class="dot active"></span>
         </div>
 
-        <!-- Password -->
-        <div class="mt-4">
-            <x-input-label for="password" :value="__('Password')" />
+        <form method="POST" action="{{ route('register') }}">
+            @csrf
 
-            <x-text-input id="password" class="block mt-1 w-full"
-                            type="password"
-                            name="password"
-                            required autocomplete="new-password" />
+            {{-- Full Name / Display Name --}}
+            <div class="form-group">
+                <input
+                    type="text"
+                    name="display_name"
+                    placeholder="Full Name"
+                    value="{{ old('display_name') }}"
+                    required
+                    autofocus
+                    autocomplete="name"
+                    class="{{ $errors->has('display_name') ? 'is-invalid' : '' }}"
+                >
+                @error('display_name')
+                    <span class="invalid-feedback">{{ $message }}</span>
+                @enderror
+            </div>
 
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
-        </div>
+            {{-- Email --}}
+            <div class="form-group">
+                <input
+                    type="email"
+                    name="email"
+                    placeholder="Email Address"
+                    value="{{ old('email') }}"
+                    required
+                    autocomplete="username"
+                    class="{{ $errors->has('email') ? 'is-invalid' : '' }}"
+                >
+                @error('email')
+                    <span class="invalid-feedback">{{ $message }}</span>
+                @enderror
+            </div>
 
-        <!-- Confirm Password -->
-        <div class="mt-4">
-            <x-input-label for="password_confirmation" :value="__('Confirm Password')" />
+            {{-- Password --}}
+            <div class="form-group">
+                <input
+                    type="password"
+                    name="password"
+                    placeholder="Password"
+                    required
+                    autocomplete="new-password"
+                    class="{{ $errors->has('password') ? 'is-invalid' : '' }}"
+                >
+                @error('password')
+                    <span class="invalid-feedback">{{ $message }}</span>
+                @enderror
+                <span class="password-hint">Minimum 8 characters</span>
+            </div>
 
-            <x-text-input id="password_confirmation" class="block mt-1 w-full"
-                            type="password"
-                            name="password_confirmation" required autocomplete="new-password" />
+            {{-- Confirm Password --}}
+            <div class="form-group">
+                <input
+                    type="password"
+                    name="password_confirmation"
+                    placeholder="Confirm Password"
+                    required
+                    autocomplete="new-password"
+                    class="{{ $errors->has('password_confirmation') ? 'is-invalid' : '' }}"
+                >
+                @error('password_confirmation')
+                    <span class="invalid-feedback">{{ $message }}</span>
+                @enderror
+            </div>
 
-            <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
-        </div>
+            <button type="submit" class="btn-register">Get Started</button>
+        </form>
 
-        <div class="flex items-center justify-end mt-4">
-            <a class="underline text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800" href="{{ route('login') }}">
-                {{ __('Already registered?') }}
-            </a>
+        <p class="login-link">Already have an account? <a href="{{ route('login') }}">Login</a></p>
+    </div>
+</div>
 
-            <x-primary-button class="ms-4">
-                {{ __('Register') }}
-            </x-primary-button>
-        </div>
-    </form>
-</x-guest-layout>
+</body>
+</html>
