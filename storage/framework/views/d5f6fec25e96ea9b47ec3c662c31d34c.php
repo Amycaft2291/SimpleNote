@@ -85,6 +85,7 @@
              data-images="<?php echo e($note->images->toJson()); ?>"
              data-pinned="<?php echo e($note->is_pinned ? 1 : 0); ?>"
              data-timestamp="<?php echo e($note->updated_at->timestamp); ?>"
+             data-created-at="<?php echo e($note->created_at->diffForHumans()); ?>"
              onclick="openEditModal(this)">
             
             <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden relative shadow-sm hover:shadow-md transition-all">
@@ -104,6 +105,17 @@
                 <?php endif; ?>
 
                 <div class="p-4">
+                    <div class="mt-3 pt-3 border-t border-slate-100 dark:border-slate-700 flex justify-between items-center text-[10px] text-slate-400 font-medium">
+                        <div class="flex items-center gap-1">
+                            <span class="material-symbols-outlined text-xs">calendar_today</span>
+                            <?php echo e($note->created_at->format('d/m/Y')); ?>
+
+                        </div>
+                        <div class="italic">
+                            <?php echo e($note->created_at->diffForHumans()); ?>
+
+                        </div>
+                    </div>
                     <?php if($note->title): ?>
                     <h2 class="note-title font-bold mb-1 dark:text-white leading-snug"><?php echo e($note->title); ?></h2>
                     <?php else: ?>
