@@ -84,7 +84,8 @@
         <div id="notesContainer" class="masonry-grid">
             @forelse($notes as $note)
                 <div class="masonry-item group cursor-pointer note-card" 
-                    data-id="{{ $note->id }}" 
+                    data-id="{{ $note->id }}"
+                    data-color="{{ $userUI->bg }}"
                     data-title="{{ e($note->title) }}"
                     data-content="{{ e($note->content) }}"
                     data-labels="{{ $note->labels->pluck('id')->join(',') }}"
@@ -94,7 +95,7 @@
                     data-created-at="{{ $note->created_at->diffForHumans() }}"
                     onclick="openEditModal(this)">
                     
-                    <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden relative shadow-sm hover:shadow-md transition-all">
+                    <div class="rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden relative shadow-sm hover:shadow-md transition-all">
                         {{--nút ghim--}}
                         <button 
                             onclick="event.stopPropagation(); pinNote(this, {{ $note->id }})"
