@@ -1,28 +1,43 @@
+@php
+    $getNoteUI = function($color) {
+        $color = $color ?? '#ffffff';
+        $isDark = ($color === '#1e293b');
+        return (object) [
+            'bg' => $color,
+            'title' => $isDark ? 'text-white' : 'dark:text-white text-slate-900',
+            'content' => $isDark ? 'text-slate-200' : 'dark:text-slate-300 text-slate-600'
+        ];
+    };
+
+    $userBg = auth()->user()->note_color ?? '#ffffff';
+    $userUI = $getNoteUI($userBg);
+@endphp
+
 <x-app-layout>
     <div id="notes-font-size">
         {{--khung nhập gchu nhanh--}}
         <div class="max-w-2xl mx-auto mb-10">
-            <div id="createBar" class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 transition-all hover:shadow-md">
-                <div id="createPlaceholder" class="flex items-center justify-between p-4 cursor-pointer text-slate-400" onclick="openCreateForm()">
+            <div id="createBar" class="rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 transition-all hover:shadow-md" style="background-color: {{ $userUI->bg }} !important;">
+                <div id="createPlaceholder" class="flex items-center justify-between p-4 cursor-pointer {{ $userUI->content }}" onclick="openCreateForm()">
                     <span class="font-medium text-sm">Tạo ghi chú mới...</span>
                     <span class="material-symbols-outlined">image</span>
                 </div>
 
                 <div id="createForm" class="hidden p-4 space-y-3">
-                    <input id="newTitle" type="text" placeholder="Tiêu đề" class="w-full font-bold Zbg-transparent border-none outline-none dark:text-white focus:ring-0 px-0">
-                    <textarea id="newContent" rows="3" placeholder="Nội dung ghi chú..." class="w-full text-sm bg-transparent border-none outline-none resize-none dark:text-slate-300 focus:ring-0 px-0"></textarea>
+                    <input id="newTitle" type="text" placeholder="Tiêu đề" class="w-full font-bold border-none outline-none focus:ring-0 px-0 {{ $userUI->title }}" style="background-color: transparent !important;">
+                    <textarea id="newContent" rows="3" placeholder="Nội dung ghi chú..." class="w-full text-sm border-none outline-none resize-none focus:ring-0 px-0 {{ $userUI->content }}" style="background-color: transparent !important;"></textarea>
                     
                     <div>
-                        <label class="text-xs font-bold text-slate-400 uppercase block mb-1">Ảnh đính kèm</label>
-                        <input type="file" id="newImages" multiple accept="image/*" class="text-sm text-slate-500 file:mr-4 file:py-1 file:px-3 file:rounded-full file:border-0 file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:file:bg-slate-700 dark:file:text-blue-300">
+                        <label class="text-xs font-bold uppercase block mb-1 {{ $userUI->content }} opacity-60">Ảnh đính kèm</label>
+                        <input type="file" id="newImages" multiple accept="image/*" class="text-sm text-slate-500 file:mr-4 file:py-1 file:px-3 file:rounded-full file:border-0 file:bg-black/5 file:text-current">
                     </div>
                     
                     <div class="border-t border-slate-100 dark:border-slate-700 pt-3">
-                        <p class="text-xs font-bold text-slate-400 uppercase mb-2">Gán Nhãn</p>
+                        <p class="text-xs font-bold uppercase mb-2 {{ $userUI->content }} opacity-60">Gán Nhãn</p>
                         <div class="flex flex-wrap gap-2">
                             @isset($labels)
                                 @foreach($labels as $label)
-                                <label class="flex items-center gap-1.5 text-xs bg-slate-100 dark:bg-slate-700 dark:text-slate-300 px-2 py-1 rounded-lg cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">
+                                <label class="flex items-center gap-1.5 text-xs bg-black/5 px-2 py-1 rounded-lg cursor-pointer hover:bg-black/10 transition-colors {{ $userUI->content }}">
                                     <input type="checkbox" value="{{ $label->id }}" class="new-label-cb rounded border-slate-300 text-blue-600 shadow-sm focus:ring-blue-500">
                                     <span class="w-2 h-2 rounded-full flex-shrink-0" style="background-color: {{ $label->color }}"></span>
                                     {{ $label->name }}
@@ -33,7 +48,7 @@
                     </div>
 
                     <div class="flex justify-end gap-2 pt-2">
-                        <button onclick="closeCreateForm()" class="px-4 py-1.5 text-sm text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg">Đóng</button>
+                        <button onclick="closeCreateForm()" class="px-4 py-1.5 text-sm rounded-lg hover:bg-black/5 {{ $userUI->content }}">Đóng</button>
                         <button onclick="saveNote()" class="px-4 py-1.5 text-sm font-semibold bg-blue-600 text-white rounded-lg hover:bg-blue-700">Lưu</button>
                     </div>
                 </div>
