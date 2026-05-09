@@ -21,11 +21,6 @@ return new class extends Migration
             $table->boolean('is_activated')->default(false);
             $table->string('activation_token')->nullable();
             
-            // User Preferences (Tùy chỉnh người dùng) [cite: 45, 213]
-            $table->integer('font_size')->default(14);
-            $table->string('note_color')->default('#ffffff');
-            $table->enum('theme', ['light', 'dark'])->default('light');
-            
             $table->rememberToken();
             $table->timestamps();
         });
