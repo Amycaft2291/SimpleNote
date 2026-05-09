@@ -84,7 +84,7 @@
         <div id="notesContainer" class="masonry-grid">
             @forelse($notes as $note)
                 <div class="masonry-item group cursor-pointer note-card" 
-                    data-id="{{ $note->id }}"
+                    data-id="{{ $note->id }}" 
                     data-color="{{ $userUI->bg }}"
                     data-title="{{ e($note->title) }}"
                     data-content="{{ e($note->content) }}"
@@ -95,24 +95,22 @@
                     data-created-at="{{ $note->created_at->diffForHumans() }}"
                     onclick="openEditModal(this)">
                     
-                    <div class="rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden relative shadow-sm hover:shadow-md transition-all">
-                        {{--nút ghim--}}
-                        <button 
-                            onclick="event.stopPropagation(); pinNote(this, {{ $note->id }})"
-                            class="absolute top-2 right-2 z-10 p-1 rounded-full opacity-0 group-hover:opacity-100 transition-all
-                            {{ $note->is_pinned ? '!opacity-100 text-yellow-500' : 'text-slate-400 hover:text-yellow-500 bg-white/80 dark:bg-slate-800/80' }}"
-                            title="{{ $note->is_pinned ? 'Bỏ ghim' : 'Ghim ghi chú' }}">
+                    <div class="rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden relative shadow-sm hover:shadow-md transition-all"
+                        style="background-color: {{ $userUI->bg }} !important;">
+                        
+                        <button onclick="event.stopPropagation(); pinNote(this, {{ $note->id }})"
+                            class="absolute top-2 right-2 z-10 p-1 rounded-full opacity-0 group-hover:opacity-100 transition-all {{ $note->is_pinned ? '!opacity-100 text-yellow-500' : 'text-slate-400 hover:text-yellow-500 bg-black/10' }}">
                             <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' {{ $note->is_pinned ? 1 : 0 }}, 'wght' 400, 'GRAD' 0, 'opsz' 24;">push_pin</span>
                         </button>
 
                         @if($note->images->count() > 0)
-                        <div class="w-full h-40 overflow-hidden bg-slate-100 dark:bg-slate-700">
+                        <div class="w-full h-40 overflow-hidden bg-black/5">
                             <img src="{{ asset('storage/' . $note->images->first()->image_path) }}" class="w-full h-full object-cover">
                         </div>
                         @endif
 
                         <div class="p-4">
-                            <div class="mt-3 pt-3 border-t border-slate-100 dark:border-slate-700 flex justify-between items-center text-[10px] text-slate-400 font-medium">
+                            <div class="mt-3 pt-3 border-t border-black/5 flex justify-between items-center text-[10px] {{ $userUI->content }} opacity-50 font-medium">
                                 <div class="flex items-center gap-1">
                                     <span class="material-symbols-outlined text-xs">calendar_today</span>
                                     {{ $note->created_at->format('d/m/Y') }}
@@ -121,17 +119,19 @@
                                     {{ $note->created_at->diffForHumans() }}
                                 </div>
                             </div>
+
                             @if($note->title)
-                            <h2 class="note-title font-bold mb-1 dark:text-white leading-snug">{{ $note->title }}</h2>
+                                <h2 class="note-title font-bold mb-1 {{ $userUI->title }} leading-snug">{{ $note->title }}</h2>
                             @else
-                            <h2 class="note-title hidden"></h2>
+                                <h2 class="note-title hidden"></h2>
                             @endif
-                            <p class="note-content line-clamp-5 text-sm text-slate-600 dark:text-slate-300 leading-relaxed">{{ $note->content }}</p>
+
+                            <p class="note-content line-clamp-5 text-sm {{ $userUI->content }} leading-relaxed">{{ $note->content }}</p>
                             
                             @if($note->labels->count() > 0)
                             <div class="flex flex-wrap gap-1 mt-3">
                                 @foreach($note->labels as $lbl)
-                                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full text-white" style="background-color: {{ $lbl->color }}">{{ $lbl->name }}</span>
+                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full text-white" style="background-color: {{ $lbl->color }}">{{ $lbl->name }}</span>
                                 @endforeach
                             </div>
                             @endif
