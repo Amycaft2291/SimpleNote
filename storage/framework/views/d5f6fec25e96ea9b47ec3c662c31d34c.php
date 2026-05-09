@@ -1,11 +1,13 @@
 <?php
     $getNoteUI = function($color) {
-        $color = $color ?? '#ffffff';
-        $isDark = ($color === '#1e293b');
+        $color = $color ?? auth()->user()->note_color ?? '#ffffff';
+        
+        $isSpecificDark = ($color === '#1e293b');
+
         return (object) [
             'bg' => $color,
-            'title' => $isDark ? 'text-white' : 'dark:text-white text-slate-900',
-            'content' => $isDark ? 'text-slate-200' : 'dark:text-slate-300 text-slate-600'
+            'title' => $isSpecificDark ? 'text-white' : 'dark:text-white text-slate-900',
+            'content' => $isSpecificDark ? 'text-slate-200' : 'dark:text-slate-300 text-slate-600'
         ];
     };
 
