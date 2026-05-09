@@ -6,8 +6,10 @@
 
         return (object) [
             'bg' => $color,
-            'title' => $isSpecificDark ? 'text-white' : 'dark:text-white text-slate-900',
-            'content' => $isSpecificDark ? 'text-slate-200' : 'dark:text-slate-300 text-slate-600'
+            'title' => $isSpecificDark ? 'text-white' : 'text-slate-900', 
+            'content' => $isSpecificDark ? 'text-slate-200' : 'text-slate-600',
+            'muted' => $isSpecificDark ? 'text-slate-400' : 'text-slate-500',
+            'border' => $isSpecificDark ? 'border-white/10' : 'border-black/5'
         ];
     };
 
@@ -27,42 +29,20 @@
 <?php $component->withAttributes([]); ?>
     <div id="notes-font-size">
         
-        <div class="max-w-2xl mx-auto mb-10">
-            <div id="createBar" class="rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 transition-all hover:shadow-md" style="background-color: <?php echo e($userUI->bg); ?> !important;">
-                <div id="createPlaceholder" class="flex items-center justify-between p-4 cursor-pointer <?php echo e($userUI->content); ?>" onclick="openCreateForm()">
-                    <span class="font-medium text-sm">Tạo ghi chú mới...</span>
-                    <span class="material-symbols-outlined">image</span>
-                </div>
+        <div id="createBar" class="rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 transition-all hover:shadow-md" style="background-color: <?php echo e($userUI->bg); ?> !important;">
+            <div id="createPlaceholder" class="flex items-center justify-between p-4 cursor-pointer <?php echo e($userUI->content); ?>" onclick="openCreateForm()">
+                <span class="font-medium text-sm">Tạo ghi chú mới...</span>
+                <span class="material-symbols-outlined">image</span>
+            </div>
 
-                <div id="createForm" class="hidden p-4 space-y-3">
-                    <input id="newTitle" type="text" placeholder="Tiêu đề" class="w-full font-bold border-none outline-none focus:ring-0 px-0 <?php echo e($userUI->title); ?>" style="background-color: transparent !important;">
-                    <textarea id="newContent" rows="3" placeholder="Nội dung ghi chú..." class="w-full text-sm border-none outline-none resize-none focus:ring-0 px-0 <?php echo e($userUI->content); ?>" style="background-color: transparent !important;"></textarea>
-                    
-                    <div>
-                        <label class="text-xs font-bold uppercase block mb-1 <?php echo e($userUI->content); ?> opacity-60">Ảnh đính kèm</label>
-                        <input type="file" id="newImages" multiple accept="image/*" class="text-sm text-slate-500 file:mr-4 file:py-1 file:px-3 file:rounded-full file:border-0 file:bg-black/5 file:text-current">
-                    </div>
-                    
-                    <div class="border-t border-slate-100 dark:border-slate-700 pt-3">
-                        <p class="text-xs font-bold uppercase mb-2 <?php echo e($userUI->content); ?> opacity-60">Gán Nhãn</p>
-                        <div class="flex flex-wrap gap-2">
-                            <?php if(isset($labels)): ?>
-                                <?php $__currentLoopData = $labels; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $label): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                                <label class="flex items-center gap-1.5 text-xs bg-black/5 px-2 py-1 rounded-lg cursor-pointer hover:bg-black/10 transition-colors <?php echo e($userUI->content); ?>">
-                                    <input type="checkbox" value="<?php echo e($label->id); ?>" class="new-label-cb rounded border-slate-300 text-blue-600 shadow-sm focus:ring-blue-500">
-                                    <span class="w-2 h-2 rounded-full flex-shrink-0" style="background-color: <?php echo e($label->color); ?>"></span>
-                                    <?php echo e($label->name); ?>
-
-                                </label>
-                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-                            <?php endif; ?>
-                        </div>
-                    </div>
-
-                    <div class="flex justify-end gap-2 pt-2">
-                        <button onclick="closeCreateForm()" class="px-4 py-1.5 text-sm rounded-lg hover:bg-black/5 <?php echo e($userUI->content); ?>">Đóng</button>
-                        <button onclick="saveNote()" class="px-4 py-1.5 text-sm font-semibold bg-blue-600 text-white rounded-lg hover:bg-blue-700">Lưu</button>
-                    </div>
+            <div id="createForm" class="hidden p-4 space-y-3">
+                
+                <input id="newTitle" type="text" placeholder="Tiêu đề" class="w-full font-bold border-none outline-none focus:ring-0 px-0 <?php echo e($userUI->title); ?>" style="background-color: transparent !important;">
+                <textarea id="newContent" rows="3" placeholder="Nội dung ghi chú..." class="w-full text-sm border-none outline-none resize-none focus:ring-0 px-0 <?php echo e($userUI->content); ?>" style="background-color: transparent !important;"></textarea>
+                
+                <div class="flex justify-end gap-2 pt-2 border-t <?php echo e($userUI->border); ?>">
+                    <button onclick="closeCreateForm()" class="px-4 py-1.5 text-sm rounded-lg hover:bg-black/5 <?php echo e($userUI->content); ?>">Đóng</button>
+                    <button onclick="saveNote()" class="px-4 py-1.5 text-sm font-semibold bg-blue-600 text-white rounded-lg hover:bg-blue-700">Lưu</button>
                 </div>
             </div>
         </div>
@@ -107,45 +87,35 @@
                     data-created-at="<?php echo e($note->created_at->diffForHumans()); ?>"
                     onclick="openEditModal(this)">
                     
-                    <div class="rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden relative shadow-sm hover:shadow-md transition-all"
-                        style="background-color: <?php echo e($userUI->bg); ?> !important;">
+                    <div class="rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden relative shadow-sm hover:shadow-md transition-all" style="background-color: <?php echo e($userUI->bg); ?> !important;">                       
                         
                         <button onclick="event.stopPropagation(); pinNote(this, <?php echo e($note->id); ?>)"
-                            class="absolute top-2 right-2 z-10 p-1 rounded-full opacity-0 group-hover:opacity-100 transition-all <?php echo e($note->is_pinned ? '!opacity-100 text-yellow-500' : 'text-slate-400 hover:text-yellow-500 bg-black/10'); ?>">
-                            <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' <?php echo e($note->is_pinned ? 1 : 0); ?>, 'wght' 400, 'GRAD' 0, 'opsz' 24;">push_pin</span>
+                            class="absolute top-2 right-2 z-10 p-1 rounded-full opacity-0 group-hover:opacity-100 transition-all <?php echo e($note->is_pinned ? '!opacity-100 text-yellow-500' : 'text-slate-400 hover:text-yellow-500 bg-black/5'); ?>">
+                            <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' <?php echo e($note->is_pinned ? 1 : 0); ?>;">push_pin</span>
                         </button>
 
-                        <?php if($note->images->count() > 0): ?>
-                        <div class="w-full h-40 overflow-hidden bg-black/5">
-                            <img src="<?php echo e(asset('storage/' . $note->images->first()->image_path)); ?>" class="w-full h-full object-cover">
-                        </div>
-                        <?php endif; ?>
-
                         <div class="p-4">
-                            <div class="mt-3 pt-3 border-t border-black/5 flex justify-between items-center text-[10px] <?php echo e($userUI->content); ?> opacity-50 font-medium">
+                            
+                            <div class="mb-3 pb-3 border-b <?php echo e($userUI->border); ?> flex justify-between items-center text-[10px] <?php echo e($userUI->muted); ?> font-bold uppercase tracking-wider">
                                 <div class="flex items-center gap-1">
                                     <span class="material-symbols-outlined text-xs">calendar_today</span>
                                     <?php echo e($note->created_at->format('d/m/Y')); ?>
 
                                 </div>
-                                <div class="italic">
-                                    <?php echo e($note->created_at->diffForHumans()); ?>
-
-                                </div>
+                                <span><?php echo e($note->created_at->diffForHumans()); ?></span>
                             </div>
 
                             <?php if($note->title): ?>
                                 <h2 class="note-title font-bold mb-1 <?php echo e($userUI->title); ?> leading-snug"><?php echo e($note->title); ?></h2>
-                            <?php else: ?>
-                                <h2 class="note-title hidden"></h2>
                             <?php endif; ?>
 
                             <p class="note-content line-clamp-5 text-sm <?php echo e($userUI->content); ?> leading-relaxed"><?php echo e($note->content); ?></p>
                             
+                            
                             <?php if($note->labels->count() > 0): ?>
                             <div class="flex flex-wrap gap-1 mt-3">
                                 <?php $__currentLoopData = $note->labels; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $lbl): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full text-white" style="background-color: <?php echo e($lbl->color); ?>"><?php echo e($lbl->name); ?></span>
+                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full text-white shadow-sm" style="background-color: <?php echo e($lbl->color); ?>"><?php echo e($lbl->name); ?></span>
                                 <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                             </div>
                             <?php endif; ?>

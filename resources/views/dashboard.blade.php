@@ -6,8 +6,10 @@
 
         return (object) [
             'bg' => $color,
-            'title' => $isSpecificDark ? 'text-white' : 'dark:text-white text-slate-900',
-            'content' => $isSpecificDark ? 'text-slate-200' : 'dark:text-slate-300 text-slate-600'
+            'title' => $isSpecificDark ? 'text-white' : 'text-slate-900', 
+            'content' => $isSpecificDark ? 'text-slate-200' : 'text-slate-600',
+            'muted' => $isSpecificDark ? 'text-slate-400' : 'text-slate-500',
+            'border' => $isSpecificDark ? 'border-white/10' : 'border-black/5'
         ];
     };
 
@@ -18,41 +20,20 @@
 <x-app-layout>
     <div id="notes-font-size">
         {{--khung nhập gchu nhanh--}}
-        <div class="max-w-2xl mx-auto mb-10">
-            <div id="createBar" class="rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 transition-all hover:shadow-md" style="background-color: {{ $userUI->bg }} !important;">
-                <div id="createPlaceholder" class="flex items-center justify-between p-4 cursor-pointer {{ $userUI->content }}" onclick="openCreateForm()">
-                    <span class="font-medium text-sm">Tạo ghi chú mới...</span>
-                    <span class="material-symbols-outlined">image</span>
-                </div>
+        <div id="createBar" class="rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 transition-all hover:shadow-md" style="background-color: {{ $userUI->bg }} !important;">
+            <div id="createPlaceholder" class="flex items-center justify-between p-4 cursor-pointer {{ $userUI->content }}" onclick="openCreateForm()">
+                <span class="font-medium text-sm">Tạo ghi chú mới...</span>
+                <span class="material-symbols-outlined">image</span>
+            </div>
 
-                <div id="createForm" class="hidden p-4 space-y-3">
-                    <input id="newTitle" type="text" placeholder="Tiêu đề" class="w-full font-bold border-none outline-none focus:ring-0 px-0 {{ $userUI->title }}" style="background-color: transparent !important;">
-                    <textarea id="newContent" rows="3" placeholder="Nội dung ghi chú..." class="w-full text-sm border-none outline-none resize-none focus:ring-0 px-0 {{ $userUI->content }}" style="background-color: transparent !important;"></textarea>
-                    
-                    <div>
-                        <label class="text-xs font-bold uppercase block mb-1 {{ $userUI->content }} opacity-60">Ảnh đính kèm</label>
-                        <input type="file" id="newImages" multiple accept="image/*" class="text-sm text-slate-500 file:mr-4 file:py-1 file:px-3 file:rounded-full file:border-0 file:bg-black/5 file:text-current">
-                    </div>
-                    
-                    <div class="border-t border-slate-100 dark:border-slate-700 pt-3">
-                        <p class="text-xs font-bold uppercase mb-2 {{ $userUI->content }} opacity-60">Gán Nhãn</p>
-                        <div class="flex flex-wrap gap-2">
-                            @isset($labels)
-                                @foreach($labels as $label)
-                                <label class="flex items-center gap-1.5 text-xs bg-black/5 px-2 py-1 rounded-lg cursor-pointer hover:bg-black/10 transition-colors {{ $userUI->content }}">
-                                    <input type="checkbox" value="{{ $label->id }}" class="new-label-cb rounded border-slate-300 text-blue-600 shadow-sm focus:ring-blue-500">
-                                    <span class="w-2 h-2 rounded-full flex-shrink-0" style="background-color: {{ $label->color }}"></span>
-                                    {{ $label->name }}
-                                </label>
-                                @endforeach
-                            @endisset
-                        </div>
-                    </div>
-
-                    <div class="flex justify-end gap-2 pt-2">
-                        <button onclick="closeCreateForm()" class="px-4 py-1.5 text-sm rounded-lg hover:bg-black/5 {{ $userUI->content }}">Đóng</button>
-                        <button onclick="saveNote()" class="px-4 py-1.5 text-sm font-semibold bg-blue-600 text-white rounded-lg hover:bg-blue-700">Lưu</button>
-                    </div>
+            <div id="createForm" class="hidden p-4 space-y-3">
+                {{-- Bổ sung class biến UI vào đây --}}
+                <input id="newTitle" type="text" placeholder="Tiêu đề" class="w-full font-bold border-none outline-none focus:ring-0 px-0 {{ $userUI->title }}" style="background-color: transparent !important;">
+                <textarea id="newContent" rows="3" placeholder="Nội dung ghi chú..." class="w-full text-sm border-none outline-none resize-none focus:ring-0 px-0 {{ $userUI->content }}" style="background-color: transparent !important;"></textarea>
+                
+                <div class="flex justify-end gap-2 pt-2 border-t {{ $userUI->border }}">
+                    <button onclick="closeCreateForm()" class="px-4 py-1.5 text-sm rounded-lg hover:bg-black/5 {{ $userUI->content }}">Đóng</button>
+                    <button onclick="saveNote()" class="px-4 py-1.5 text-sm font-semibold bg-blue-600 text-white rounded-lg hover:bg-blue-700">Lưu</button>
                 </div>
             </div>
         </div>
@@ -97,43 +78,34 @@
                     data-created-at="{{ $note->created_at->diffForHumans() }}"
                     onclick="openEditModal(this)">
                     
-                    <div class="rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden relative shadow-sm hover:shadow-md transition-all"
-                        style="background-color: {{ $userUI->bg }} !important;">
-                        
+                    <div class="rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden relative shadow-sm hover:shadow-md transition-all" style="background-color: {{ $userUI->bg }} !important;">                       
+                        {{-- Nút Pin --}}
                         <button onclick="event.stopPropagation(); pinNote(this, {{ $note->id }})"
-                            class="absolute top-2 right-2 z-10 p-1 rounded-full opacity-0 group-hover:opacity-100 transition-all {{ $note->is_pinned ? '!opacity-100 text-yellow-500' : 'text-slate-400 hover:text-yellow-500 bg-black/10' }}">
-                            <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' {{ $note->is_pinned ? 1 : 0 }}, 'wght' 400, 'GRAD' 0, 'opsz' 24;">push_pin</span>
+                            class="absolute top-2 right-2 z-10 p-1 rounded-full opacity-0 group-hover:opacity-100 transition-all {{ $note->is_pinned ? '!opacity-100 text-yellow-500' : 'text-slate-400 hover:text-yellow-500 bg-black/5' }}">
+                            <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' {{ $note->is_pinned ? 1 : 0 }};">push_pin</span>
                         </button>
 
-                        @if($note->images->count() > 0)
-                        <div class="w-full h-40 overflow-hidden bg-black/5">
-                            <img src="{{ asset('storage/' . $note->images->first()->image_path) }}" class="w-full h-full object-cover">
-                        </div>
-                        @endif
-
                         <div class="p-4">
-                            <div class="mt-3 pt-3 border-t border-black/5 flex justify-between items-center text-[10px] {{ $userUI->content }} opacity-50 font-medium">
+                            {{-- Phần Ngày tháng: Tôi đã fix lại class để nổi bật hơn --}}
+                            <div class="mb-3 pb-3 border-b {{ $userUI->border }} flex justify-between items-center text-[10px] {{ $userUI->muted }} font-bold uppercase tracking-wider">
                                 <div class="flex items-center gap-1">
                                     <span class="material-symbols-outlined text-xs">calendar_today</span>
                                     {{ $note->created_at->format('d/m/Y') }}
                                 </div>
-                                <div class="italic">
-                                    {{ $note->created_at->diffForHumans() }}
-                                </div>
+                                <span>{{ $note->created_at->diffForHumans() }}</span>
                             </div>
 
                             @if($note->title)
                                 <h2 class="note-title font-bold mb-1 {{ $userUI->title }} leading-snug">{{ $note->title }}</h2>
-                            @else
-                                <h2 class="note-title hidden"></h2>
                             @endif
 
                             <p class="note-content line-clamp-5 text-sm {{ $userUI->content }} leading-relaxed">{{ $note->content }}</p>
                             
+                            {{-- Label --}}
                             @if($note->labels->count() > 0)
                             <div class="flex flex-wrap gap-1 mt-3">
                                 @foreach($note->labels as $lbl)
-                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full text-white" style="background-color: {{ $lbl->color }}">{{ $lbl->name }}</span>
+                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full text-white shadow-sm" style="background-color: {{ $lbl->color }}">{{ $lbl->name }}</span>
                                 @endforeach
                             </div>
                             @endif
