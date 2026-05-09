@@ -1,28 +1,43 @@
+@php
+    $getNoteUI = function($color) {
+        $color = $color ?? '#ffffff';
+        $isDark = ($color === '#1e293b');
+        return (object) [
+            'bg' => $color,
+            'title' => $isDark ? 'text-white' : 'dark:text-white text-slate-900',
+            'content' => $isDark ? 'text-slate-200' : 'dark:text-slate-300 text-slate-600'
+        ];
+    };
+
+    $userBg = auth()->user()->note_color ?? '#ffffff';
+    $userUI = $getNoteUI($userBg);
+@endphp
+
 <x-app-layout>
     <div id="notes-font-size">
         {{--khung nhập gchu nhanh--}}
         <div class="max-w-2xl mx-auto mb-10">
-            <div id="createBar" class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 transition-all hover:shadow-md">
-                <div id="createPlaceholder" class="flex items-center justify-between p-4 cursor-pointer text-slate-400" onclick="openCreateForm()">
+            <div id="createBar" class="rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 transition-all hover:shadow-md" style="background-color: {{ $userUI->bg }} !important;">
+                <div id="createPlaceholder" class="flex items-center justify-between p-4 cursor-pointer {{ $userUI->content }}" onclick="openCreateForm()">
                     <span class="font-medium text-sm">Tạo ghi chú mới...</span>
                     <span class="material-symbols-outlined">image</span>
                 </div>
 
                 <div id="createForm" class="hidden p-4 space-y-3">
-                    <input id="newTitle" type="text" placeholder="Tiêu đề" class="w-full font-bold Zbg-transparent border-none outline-none dark:text-white focus:ring-0 px-0">
-                    <textarea id="newContent" rows="3" placeholder="Nội dung ghi chú..." class="w-full text-sm bg-transparent border-none outline-none resize-none dark:text-slate-300 focus:ring-0 px-0"></textarea>
+                    <input id="newTitle" type="text" placeholder="Tiêu đề" class="w-full font-bold border-none outline-none focus:ring-0 px-0 {{ $userUI->title }}" style="background-color: transparent !important;">
+                    <textarea id="newContent" rows="3" placeholder="Nội dung ghi chú..." class="w-full text-sm border-none outline-none resize-none focus:ring-0 px-0 {{ $userUI->content }}" style="background-color: transparent !important;"></textarea>
                     
                     <div>
-                        <label class="text-xs font-bold text-slate-400 uppercase block mb-1">Ảnh đính kèm</label>
-                        <input type="file" id="newImages" multiple accept="image/*" class="text-sm text-slate-500 file:mr-4 file:py-1 file:px-3 file:rounded-full file:border-0 file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:file:bg-slate-700 dark:file:text-blue-300">
+                        <label class="text-xs font-bold uppercase block mb-1 {{ $userUI->content }} opacity-60">Ảnh đính kèm</label>
+                        <input type="file" id="newImages" multiple accept="image/*" class="text-sm text-slate-500 file:mr-4 file:py-1 file:px-3 file:rounded-full file:border-0 file:bg-black/5 file:text-current">
                     </div>
                     
                     <div class="border-t border-slate-100 dark:border-slate-700 pt-3">
-                        <p class="text-xs font-bold text-slate-400 uppercase mb-2">Gán Nhãn</p>
+                        <p class="text-xs font-bold uppercase mb-2 {{ $userUI->content }} opacity-60">Gán Nhãn</p>
                         <div class="flex flex-wrap gap-2">
                             @isset($labels)
                                 @foreach($labels as $label)
-                                <label class="flex items-center gap-1.5 text-xs bg-slate-100 dark:bg-slate-700 dark:text-slate-300 px-2 py-1 rounded-lg cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">
+                                <label class="flex items-center gap-1.5 text-xs bg-black/5 px-2 py-1 rounded-lg cursor-pointer hover:bg-black/10 transition-colors {{ $userUI->content }}">
                                     <input type="checkbox" value="{{ $label->id }}" class="new-label-cb rounded border-slate-300 text-blue-600 shadow-sm focus:ring-blue-500">
                                     <span class="w-2 h-2 rounded-full flex-shrink-0" style="background-color: {{ $label->color }}"></span>
                                     {{ $label->name }}
@@ -33,7 +48,7 @@
                     </div>
 
                     <div class="flex justify-end gap-2 pt-2">
-                        <button onclick="closeCreateForm()" class="px-4 py-1.5 text-sm text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg">Đóng</button>
+                        <button onclick="closeCreateForm()" class="px-4 py-1.5 text-sm rounded-lg hover:bg-black/5 {{ $userUI->content }}">Đóng</button>
                         <button onclick="saveNote()" class="px-4 py-1.5 text-sm font-semibold bg-blue-600 text-white rounded-lg hover:bg-blue-700">Lưu</button>
                     </div>
                 </div>
@@ -70,6 +85,7 @@
             @forelse($notes as $note)
                 <div class="masonry-item group cursor-pointer note-card" 
                     data-id="{{ $note->id }}" 
+                    data-color="{{ $userUI->bg }}"
                     data-title="{{ e($note->title) }}"
                     data-content="{{ e($note->content) }}"
                     data-labels="{{ $note->labels->pluck('id')->join(',') }}"
@@ -79,24 +95,22 @@
                     data-created-at="{{ $note->created_at->diffForHumans() }}"
                     onclick="openEditModal(this)">
                     
-                    <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden relative shadow-sm hover:shadow-md transition-all">
-                        {{--nút ghim--}}
-                        <button 
-                            onclick="event.stopPropagation(); pinNote(this, {{ $note->id }})"
-                            class="absolute top-2 right-2 z-10 p-1 rounded-full opacity-0 group-hover:opacity-100 transition-all
-                            {{ $note->is_pinned ? '!opacity-100 text-yellow-500' : 'text-slate-400 hover:text-yellow-500 bg-white/80 dark:bg-slate-800/80' }}"
-                            title="{{ $note->is_pinned ? 'Bỏ ghim' : 'Ghim ghi chú' }}">
+                    <div class="rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden relative shadow-sm hover:shadow-md transition-all"
+                        style="background-color: {{ $userUI->bg }} !important;">
+                        
+                        <button onclick="event.stopPropagation(); pinNote(this, {{ $note->id }})"
+                            class="absolute top-2 right-2 z-10 p-1 rounded-full opacity-0 group-hover:opacity-100 transition-all {{ $note->is_pinned ? '!opacity-100 text-yellow-500' : 'text-slate-400 hover:text-yellow-500 bg-black/10' }}">
                             <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' {{ $note->is_pinned ? 1 : 0 }}, 'wght' 400, 'GRAD' 0, 'opsz' 24;">push_pin</span>
                         </button>
 
                         @if($note->images->count() > 0)
-                        <div class="w-full h-40 overflow-hidden bg-slate-100 dark:bg-slate-700">
+                        <div class="w-full h-40 overflow-hidden bg-black/5">
                             <img src="{{ asset('storage/' . $note->images->first()->image_path) }}" class="w-full h-full object-cover">
                         </div>
                         @endif
 
                         <div class="p-4">
-                            <div class="mt-3 pt-3 border-t border-slate-100 dark:border-slate-700 flex justify-between items-center text-[10px] text-slate-400 font-medium">
+                            <div class="mt-3 pt-3 border-t border-black/5 flex justify-between items-center text-[10px] {{ $userUI->content }} opacity-50 font-medium">
                                 <div class="flex items-center gap-1">
                                     <span class="material-symbols-outlined text-xs">calendar_today</span>
                                     {{ $note->created_at->format('d/m/Y') }}
@@ -105,17 +119,19 @@
                                     {{ $note->created_at->diffForHumans() }}
                                 </div>
                             </div>
+
                             @if($note->title)
-                            <h2 class="note-title font-bold mb-1 dark:text-white leading-snug">{{ $note->title }}</h2>
+                                <h2 class="note-title font-bold mb-1 {{ $userUI->title }} leading-snug">{{ $note->title }}</h2>
                             @else
-                            <h2 class="note-title hidden"></h2>
+                                <h2 class="note-title hidden"></h2>
                             @endif
-                            <p class="note-content line-clamp-5 text-sm text-slate-600 dark:text-slate-300 leading-relaxed">{{ $note->content }}</p>
+
+                            <p class="note-content line-clamp-5 text-sm {{ $userUI->content }} leading-relaxed">{{ $note->content }}</p>
                             
                             @if($note->labels->count() > 0)
                             <div class="flex flex-wrap gap-1 mt-3">
                                 @foreach($note->labels as $lbl)
-                                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full text-white" style="background-color: {{ $lbl->color }}">{{ $lbl->name }}</span>
+                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full text-white" style="background-color: {{ $lbl->color }}">{{ $lbl->name }}</span>
                                 @endforeach
                             </div>
                             @endif
