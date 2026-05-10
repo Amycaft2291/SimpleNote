@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="csrf-token" content="<?php echo e(csrf_token()); ?>">
 
     <title>Quên mật khẩu</title>
 
@@ -249,14 +249,15 @@
                 Enter your email to receive reset instructions
             </p>
 
-            @if(session('status'))
+            <?php if(session('status')): ?>
                 <div class="alert-success">
-                    {{ session('status') }}
-                </div>
-            @endif
+                    <?php echo e(session('status')); ?>
 
-            <form method="POST" action="{{ route('password.email') }}">
-                @csrf
+                </div>
+            <?php endif; ?>
+
+            <form method="POST" action="<?php echo e(route('password.email')); ?>">
+                <?php echo csrf_field(); ?>
 
                 <div class="input-box">
                     <input
@@ -269,11 +270,19 @@
                     <i class='bx bxs-envelope'></i>
                 </div>
 
-                @error('email')
+                <?php $__errorArgs = ['email'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
                     <small class="text-danger">
-                        {{ $message }}
+                        <?php echo e($message); ?>
+
                     </small>
-                @enderror
+                <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
 
                 <button type="submit" class="btn-reset">
                     Send Reset Link
@@ -281,7 +290,7 @@
             </form>
 
             <div class="back-login">
-                <a href="{{ route('login') }}">
+                <a href="<?php echo e(route('login')); ?>">
                     ← Back to Login
                 </a>
             </div>
@@ -293,4 +302,4 @@
 </div>
 
 </body>
-</html>
+</html><?php /**PATH C:\CK Web\Composer\SimpleNote\resources\views/auth/forgot-password.blade.php ENDPATH**/ ?>

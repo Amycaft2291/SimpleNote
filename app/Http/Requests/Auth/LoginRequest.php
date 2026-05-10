@@ -37,20 +37,20 @@ class LoginRequest extends FormRequest
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
-                'email' => trans('auth.failed'),
+                'email' => trans('Email hoặc mật khẩu không chính xác.'),
             ]);
         }
 
-        $user = Auth::user();
+        // $user = Auth::user();
 
-        if (!$user->email_verified_at) {
+        // if (!$user->email_verified_at) {
 
-            Auth::logout();
+        //     Auth::logout();
 
-            throw ValidationException::withMessages([
-                'email' => 'Email chưa được xác thực.',
-            ]);
-        }
+        //     throw ValidationException::withMessages([
+        //         'email' => 'Email chưa được xác thực.',
+        //     ]);
+        // }
 
         RateLimiter::clear($this->throttleKey());
     }

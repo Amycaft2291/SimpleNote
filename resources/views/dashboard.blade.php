@@ -1,4 +1,21 @@
 <x-app-layout>
+    
+@if(!auth()->user()->hasVerifiedEmail())
+    <div class="max-w-2xl mx-auto mb-6">
+        <div class="rounded-xl border border-yellow-300 bg-yellow-100 px-4 py-3 text-yellow-800 text-sm">
+            Tài khoản của bạn chưa được xác minh email.
+            Vui lòng kiểm tra hộp thư để hoàn tất kích hoạt tài khoản.
+
+            <form method="POST" action="{{ route('verification.send') }}" class="inline">
+                @csrf
+                <button type="submit" class="ml-2 underline font-semibold hover:text-yellow-900">
+                    Gửi lại email
+                </button>
+            </form>
+        </div>
+    </div>
+@endif
+
 {{--khung nhập gchu nhanh--}}
 <div class="max-w-2xl mx-auto mb-10">
     <div id="createBar" class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 transition-all hover:shadow-md">
