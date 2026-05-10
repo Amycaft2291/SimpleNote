@@ -1,100 +1,220 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SimpleNote — Sign In</title>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <title>Authentication</title>
 
+    <!-- BOXICONS -->
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+
+    <!-- CSS -->
     <link rel="stylesheet" href="{{ asset('css/auth/style_LoginAndRegister.css') }}">
-
 </head>
+
 <body>
 
-<div class="card">
-    <!-- Left decorative panel -->
-    <div class="panel-left">
-        <div class="brand">
-            <div class="brand-icon">
-                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12 2C6.48 2 2 5.58 2 10c0 2.56 1.36 4.84 3.5 6.37V20l3.5-2.1c.96.22 1.96.35 3 .35 5.52 0 10-3.58 10-8S17.52 2 12 2z"/>
-                </svg>
-            </div>
-            <span class="brand-name">SimpleNote</span>
-        </div>
+<div class="container">
 
-        <p class="tagline">Capture every thought.<br>Access anywhere, anytime.<br>Stay organized effortlessly.</p>
-        <a href="#" class="btn-learn">Learn More</a>
-    </div>
-
-    <!-- Right form panel -->
-    <div class="panel-right">
-        <button class="close-btn" aria-label="Close">✕</button>
-
-        <h1>Welcome Back!</h1>
-        <p class="subtitle">Sign in to continue</p>
-
-        <div class="dots">
-            <span class="dot active"></span>
-            <span class="dot"></span>
-        </div>
-
-        @if (session('status'))
-            <div style="width:100%;padding:10px 14px;background:#edf9f0;border:1px solid #6fcf97;border-radius:8px;font-size:13px;color:#219653;margin-bottom:16px;">
-                {{ session('status') }}
-            </div>
-        @endif
+    <!-- LOGIN -->
+    <div class="form-box login">
 
         <form method="POST" action="{{ route('login') }}">
             @csrf
 
-            <div class="form-group">
+            <h1>Login</h1>
+
+            <!-- SUCCESS -->
+            @if(session('status'))
+                <div class="success-message">
+                    {{ session('status') }}
+                </div>
+            @endif
+
+            <!-- EMAIL -->
+            <div class="input-box">
                 <input
                     type="email"
                     name="email"
                     placeholder="Email"
                     value="{{ old('email') }}"
                     required
-                    autofocus
-                    autocomplete="username"
-                    class="{{ $errors->has('email') ? 'is-invalid' : '' }}"
                 >
-                @error('email')
-                    <span class="invalid-feedback">{{ $message }}</span>
-                @enderror
+                <i class='bx bxs-envelope'></i>
             </div>
 
-            <div class="form-group">
+            @error('email')
+                <span class="error-text">
+                    {{ $message }}
+                </span>
+            @enderror
+
+            <!-- PASSWORD -->
+            <div class="input-box">
                 <input
                     type="password"
                     name="password"
                     placeholder="Password"
                     required
-                    autocomplete="current-password"
-                    class="{{ $errors->has('password') ? 'is-invalid' : '' }}"
                 >
-                @error('password')
-                    <span class="invalid-feedback">{{ $message }}</span>
-                @enderror
+                <i class='bx bxs-lock-alt'></i>
             </div>
 
+            @error('password')
+                <span class="error-text">
+                    {{ $message }}
+                </span>
+            @enderror
+
+            <!-- FORGOT -->
             <div class="form-row">
+
                 <label class="remember">
-                    <input type="checkbox" name="remember"> Remember me
+                    <input type="checkbox" name="remember">
+                    Remember me
                 </label>
+
                 @if (Route::has('password.request'))
-                    <a href="{{ route('password.request') }}" class="forgot-link">Forgot Password?</a>
+                    <a href="{{ route('password.request') }}" class="forgot-link">
+                        Forgot password?
+                    </a>
                 @endif
+
             </div>
 
-            <button type="submit" class="btn-login">Login</button>
-        </form>
+            <button type="submit" class="btn">
+                Login
+            </button>
 
-        @if (Route::has('register'))
-            <p class="register-link">Don't have an account? <a href="{{ route('register') }}">Register</a></p>
-        @endif
+        </form>
     </div>
+
+    <!-- REGISTER -->
+    <div class="form-box register">
+
+        <form method="POST" action="{{ route('register') }}">
+            @csrf
+
+            <h1>Registration</h1>
+
+            <!-- SUCCESS -->
+            @if(session('success'))
+                <div class="success-message">
+                    {{ session('success') }}
+                </div>
+            @endif
+
+            <!-- DISPLAY NAME -->
+            <div class="input-box">
+                <input
+                    type="text"
+                    name="display_name"
+                    placeholder="Username"
+                    value="{{ old('display_name') }}"   
+                    required
+                >
+                <i class='bx bxs-user'></i>
+            </div>
+
+            @error('display_name')
+            <span class="error-text">
+                {{ $message }}
+            </span>
+            @enderror
+
+            <!-- EMAIL -->
+            <div class="input-box">
+                <input
+                    type="email"
+                    name="email"
+                    placeholder="Email"
+                    value="{{ old('email') }}"
+                    required
+                >
+                <i class='bx bxs-envelope'></i>
+            </div>
+
+            @error('email')
+            <span class="error-text">
+                {{ $message }}
+            </span>
+            @enderror
+
+            <!-- PASSWORD -->
+            <div class="input-box">
+                <input
+                    type="password"
+                    name="password"
+                    placeholder="Password"
+                    required
+                >
+                <i class='bx bxs-lock-alt'></i>
+            </div>
+
+            @error('password')
+                <span class="error-text">
+                    {{ $message }}
+                </span>
+            @enderror
+
+            <!-- CONFIRM PASSWORD -->
+            <div class="input-box">
+                <input
+                    type="password"
+                    name="password_confirmation"
+                    placeholder="Confirm Password"
+                    required
+                >
+                <i class='bx bxs-lock-alt'></i>
+            </div>
+
+            <button type="submit" class="btn">
+                Register
+            </button>
+
+        </form>
+    </div>
+
+    <!-- TOGGLE -->
+    <div class="toggle-box">
+
+        <!-- LEFT -->
+        <div class="toggle-panel toggle-left">
+            <h1>Hello, Welcome!</h1>
+            <p>Don't have an account?</p>
+
+            <button type="button" class="btn register-btn">
+                Register
+            </button>
+        </div>
+
+        <!-- RIGHT -->
+        <div class="toggle-panel toggle-right">
+            <h1>Welcome Back!</h1>
+            <p>Already have an account?</p>
+
+            <button type="button" class="btn login-btn">
+                Login
+            </button>
+        </div>
+
+    </div>
+
 </div>
+
+<script>
+    const container = document.querySelector('.container');
+    const registerBtn = document.querySelector('.register-btn');
+    const loginBtn = document.querySelector('.login-btn');
+
+    registerBtn.addEventListener('click', () => {
+        container.classList.add('active');
+    });
+
+    loginBtn.addEventListener('click', () => {
+        container.classList.remove('active');
+    });
+</script>
 
 </body>
 </html>

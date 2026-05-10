@@ -19,21 +19,72 @@
 
 <x-app-layout>
     <div id="notes-font-size">
-        {{--khung nhập gchu nhanh--}}
-        <div id="createBar" class="rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 transition-all hover:shadow-md" style="background-color: {{ $userUI->bg }} !important;">
-            <div id="createPlaceholder" class="flex items-center justify-between p-4 cursor-pointer {{ $userUI->content }}" onclick="openCreateForm()">
-                <span class="font-medium text-sm">Tạo ghi chú mới...</span>
-                <span class="material-symbols-outlined">image</span>
-            </div>
+        {{--xác thực tk = mail--}}
+        @if(!auth()->user()->hasVerifiedEmail())
+            <div class="max-w-2xl mx-auto mb-6">
+                <div class="rounded-xl border border-yellow-300 bg-yellow-100 px-4 py-3 text-yellow-800 text-sm">
+                    Tài khoản của bạn chưa được xác minh email.
+                    Vui lòng kiểm tra hộp thư để hoàn tất kích hoạt tài khoản.
 
-            <div id="createForm" class="hidden p-4 space-y-3">
-                {{-- Bổ sung class biến UI vào đây --}}
-                <input id="newTitle" type="text" placeholder="Tiêu đề" class="w-full font-bold border-none outline-none focus:ring-0 px-0 {{ $userUI->title }}" style="background-color: transparent !important;">
-                <textarea id="newContent" rows="3" placeholder="Nội dung ghi chú..." class="w-full text-sm border-none outline-none resize-none focus:ring-0 px-0 {{ $userUI->content }}" style="background-color: transparent !important;"></textarea>
+                    <form method="POST" action="{{ route('verification.send') }}" class="inline">
+                        @csrf
+                        <button type="submit" class="ml-2 underline font-semibold hover:text-yellow-900">
+                            Gửi lại email
+                        </button>
+                    </form>
+                </div>
+            </div>
+        @endif
+
+        {{--khung nhập gchu nhanh--}}
+        <div class="max-w-2xl mx-auto mb-10">
+            <div id="createBar" class="rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 transition-all hover:shadow-md" 
+                 style="background-color: {{ $userUI->bg }} !important;">
                 
-                <div class="flex justify-end gap-2 pt-2 border-t {{ $userUI->border }}">
-                    <button onclick="closeCreateForm()" class="px-4 py-1.5 text-sm rounded-lg hover:bg-black/5 {{ $userUI->content }}">Đóng</button>
-                    <button onclick="saveNote()" class="px-4 py-1.5 text-sm font-semibold bg-blue-600 text-white rounded-lg hover:bg-blue-700">Lưu</button>
+                {{-- Thanh mặc định khi chưa bấm vào --}}
+                <div id="createPlaceholder" class="flex items-center justify-between p-4 cursor-pointer {{ $userUI->content }}" onclick="openCreateForm()">
+                    <span class="font-medium text-sm">Tạo ghi chú mới...</span>
+                    <span class="material-symbols-outlined">image</span>
+                </div>
+
+                {{-- Form khi mở ra (Hợp nhất UI của bạn và Input mới) --}}
+                <div id="createForm" class="hidden p-4 space-y-3">
+                    <input id="newTitle" type="text" placeholder="Tiêu đề" 
+                           class="w-full font-bold border-none outline-none focus:ring-0 px-0 {{ $userUI->title }}" 
+                           style="background-color: transparent !important;">
+                    
+                    <textarea id="newContent" rows="3" placeholder="Nội dung ghi chú..." 
+                              class="w-full text-sm border-none outline-none resize-none focus:ring-0 px-0 {{ $userUI->content }}" 
+                              style="background-color: transparent !important;"></textarea>
+                    
+                    {{-- MỚI: Phần chọn Ảnh --}}
+                    <div>
+                        <label class="text-[10px] font-bold {{ $userUI->muted }} uppercase block mb-1">Ảnh đính kèm</label>
+                        <input type="file" id="newImages" multiple accept="image/*" 
+                               class="text-sm {{ $userUI->muted }} file:mr-4 file:py-1 file:px-3 file:rounded-full file:border-0 file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                    </div>
+                    
+                    {{-- MỚI: Phần chọn Nhãn (Labels) --}}
+                    <div class="border-t {{ $userUI->border }} pt-3">
+                        <p class="text-[10px] font-bold {{ $userUI->muted }} uppercase mb-2">Gán Nhãn</p>
+                        <div class="flex flex-wrap gap-2">
+                            @isset($labels)
+                                @foreach($labels as $label)
+                                <label class="flex items-center gap-1.5 text-xs bg-black/5 dark:bg-white/5 {{ $userUI->content }} px-2 py-1 rounded-lg cursor-pointer hover:bg-black/10">
+                                    <input type="checkbox" value="{{ $label->id }}" class="new-label-cb rounded border-slate-300 text-blue-600 shadow-sm focus:ring-blue-500">
+                                    <span class="w-2 h-2 rounded-full flex-shrink-0" style="background-color: {{ $label->color }}"></span>
+                                    {{ $label->name }}
+                                </label>
+                                @endforeach
+                            @endisset
+                        </div>
+                    </div>
+
+                    {{-- Các nút điều khiển --}}
+                    <div class="flex justify-end gap-2 pt-2 border-t {{ $userUI->border }}">
+                        <button type="button" onclick="closeCreateForm()" class="px-4 py-1.5 text-sm rounded-lg hover:bg-black/5 {{ $userUI->content }}">Đóng</button>
+                        <button type="button" onclick="saveNote()" class="px-4 py-1.5 text-sm font-semibold bg-blue-600 text-white rounded-lg hover:bg-blue-700">Lưu</button>
+                    </div>
                 </div>
             </div>
         </div>

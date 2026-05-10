@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
-use Illuminate\Support\Str;
+// use Illuminate\Support\Str;
 
 class RegisteredUserController extends Controller
 {
@@ -41,7 +41,7 @@ class RegisteredUserController extends Controller
             'display_name' => $request->display_name,
             'email' => $request->email,
             'password' => Hash::make($request->password), // Tự động băm Bcrypt [cite: 7, 188]
-            'activation_token' => Str::random(60), // Tạo token để gửi qua email [cite: 180]
+            // 'activation_token' => Str::random(60), // Tạo token để gửi qua email [cite: 180]
         ]);
 
         event(new Registered($user));
@@ -49,11 +49,10 @@ class RegisteredUserController extends Controller
         Auth::login($user); // Đăng nhập tự động sau khi đăng ký thành công [cite: 8, 218]
 
         // Đoạn này để gửi email
-        \Illuminate\Support\Facades\Mail::send('emails.activation', ['user' => $user], function ($message) use ($user) {
-            $message->to($user->email);
-            $message->subject('Kích hoạt tài khoản SimpleNote');
-        });
-
-        return redirect(route('dashboard', absolute: false));
+        // \Illuminate\Support\Facades\Mail::send('emails.activation', ['user' => $user], function ($message) use ($user) {
+        //     $message->to($user->email);
+        //     $message->subject('Kích hoạt tài khoản SimpleNote');
+        // });
+    return redirect()->route('dashboard')->with('success', 'Vui lòng kiểm tra email để xác minh tài khoản.');    
     }
 }

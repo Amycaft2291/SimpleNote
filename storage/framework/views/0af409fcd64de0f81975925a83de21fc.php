@@ -10,7 +10,7 @@
 <?php $component->withAttributes([]); ?>
 <div class="max-w-4xl mx-auto p-4 md:p-8">
     <div class="flex items-center gap-3 mb-6">
-        <h4 class="text-2xl font-bold dark:text-white">Cài đặt Giao diện</h4>
+        <h4 class="text-2xl font-bold dark:text-white">Cài đặt</h4>
     </div>
 
     <?php if(session('status')): ?>
@@ -23,7 +23,7 @@
 
         
         <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-6 shadow-sm">
-            <h6 class="font-bold text-slate-800 dark:text-slate-100 mb-1">Chủ đề (Theme)</h6>
+            <h6 class="font-bold text-slate-800 dark:text-slate-100 mb-1">Chủ đề</h6>
             <p class="text-sm text-slate-500 mb-4">Chọn giao diện phù hợp với bạn</p>
             
             <div class="grid grid-cols-3 gap-4">

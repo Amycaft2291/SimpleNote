@@ -39,21 +39,21 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-// ─── Kích hoạt tài khoản qua email ────────────────────────────────────────────
-Route::get('/activate/{token}', function ($token) {
-    $user = User::where('activation_token', $token)->first();
+// // ─── Kích hoạt tài khoản qua email ────────────────────────────────────────────
+// Route::get('/activate/{token}', function ($token) {
+//     $user = User::where('activation_token', $token)->first();
 
-    if ($user) {
-        $user->is_activated     = true;
-        $user->activation_token = null;
-        $user->save();
+//     if ($user) {
+//         $user->is_activated     = true;
+//         $user->activation_token = null;
+//         $user->save();
 
-        return redirect('/dashboard')->with('status', 'Tài khoản của bạn đã được kích hoạt thành công!');
-    }
+//         return redirect('/dashboard')->with('status', 'Tài khoản của bạn đã được kích hoạt thành công!');
+//     }
 
-    return redirect('/dashboard')->withErrors([
-        'activation' => 'Link kích hoạt không hợp lệ hoặc tài khoản đã được kích hoạt.',
-    ]);
-})->name('activate');
+//     return redirect('/dashboard')->withErrors([
+//         'activation' => 'Link kích hoạt không hợp lệ hoặc tài khoản đã được kích hoạt.',
+//     ]);
+// })->name('activate');
 
 require __DIR__ . '/auth.php';
