@@ -15,7 +15,7 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->boolean('is_pinned')->default(false); // Tính năng ghim [cite: 28, 182]
             $table->timestamp('pinned_at')->nullable();
-            $table->string('password')->nullable(); // Khóa ghi chú [cite: 39, 183]
+            $table->boolean('is_locked')->default(false);
             $table->timestamps();
         });
 

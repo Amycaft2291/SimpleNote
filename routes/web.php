@@ -37,6 +37,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get   ('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch ('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    //khóa gchu
+    Route::post('/notes/{note}/unlock', [App\Http\Controllers\NoteController::class, 'unlock'])->name('notes.unlock');
 });
 
 // // ─── Kích hoạt tài khoản qua email ────────────────────────────────────────────

@@ -118,12 +118,13 @@
         <div id="notesContainer" class="masonry-grid">
             @forelse($notes as $note)
                 <div class="masonry-item group cursor-pointer note-card" 
-                    data-id="{{ $note->id }}" 
+                    data-id="{{ $note->id }}"
+                    data-locked="{{ $note->is_locked ? 1 : 0 }}"
                     data-color="{{ $userUI->bg }}"
-                    data-title="{{ e($note->title) }}"
-                    data-content="{{ e($note->content) }}"
+                    data-title="{{ $note->is_locked ? 'Nội dung bị khóa' : e($note->title) }}"
+                    data-content="{{ $note->is_locked ? 'Vui lòng nhập mật khẩu để xem' : e($note->content) }}" 
                     data-labels="{{ $note->labels->pluck('id')->join(',') }}"
-                    data-images="{{ $note->images->toJson() }}"
+                    data-images="{{ $note->is_locked ? '[]' : $note->images->toJson() }}"
                     data-pinned="{{ $note->is_pinned ? 1 : 0 }}"
                     data-timestamp="{{ $note->updated_at->timestamp }}"
                     data-created-at="{{ $note->created_at->diffForHumans() }}"
@@ -137,7 +138,7 @@
                         </button>
 
                         <div class="p-4">
-                            {{-- Phần Ngày tháng: Tôi đã fix lại class để nổi bật hơn --}}
+                            {{--ngày tháng--}}
                             <div class="mb-3 pb-3 border-b {{ $userUI->border }} flex justify-between items-center text-[10px] {{ $userUI->muted }} font-bold uppercase tracking-wider">
                                 <div class="flex items-center gap-1">
                                     <span class="material-symbols-outlined text-xs">calendar_today</span>
@@ -146,19 +147,27 @@
                                 <span>{{ $note->created_at->diffForHumans() }}</span>
                             </div>
 
-                            @if($note->title)
-                                <h2 class="note-title font-bold mb-1 {{ $userUI->title }} leading-snug">{{ $note->title }}</h2>
+                            @if($note->is_locked)
+                                <div class="py-6 flex flex-col items-center justify-center text-slate-400">
+                                    <span class="material-symbols-outlined text-3xl mb-2">lock</span>
+                                    <p class="text-[10px] font-bold uppercase tracking-widest">Đã khóa bảo mật</p>
+                                </div>
+                            @else
+                                @if($note->title)
+                                    <h2 class="note-title font-bold mb-1 {{ $userUI->title }} leading-snug">{{ $note->title }}</h2>
+                                @endif
+                                <p class="note-content line-clamp-5 text-sm {{ $userUI->content }} leading-relaxed">{{ $note->content }}</p>
                             @endif
 
-                            <p class="note-content line-clamp-5 text-sm {{ $userUI->content }} leading-relaxed">{{ $note->content }}</p>
-                            
-                            {{-- Label --}}
+                            {{--label--}}
                             @if($note->labels->count() > 0)
-                            <div class="flex flex-wrap gap-1 mt-3">
-                                @foreach($note->labels as $lbl)
-                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full text-white shadow-sm" style="background-color: {{ $lbl->color }}">{{ $lbl->name }}</span>
-                                @endforeach
-                            </div>
+                                <div class="flex flex-wrap gap-1 mt-3">
+                                    @foreach($note->labels as $lbl)
+                                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full text-white shadow-sm" style="background-color: {{ $lbl->color }}">
+                                            {{ $lbl->name }}
+                                        </span>
+                                    @endforeach
+                                </div>
                             @endif
                         </div>
                     </div>
@@ -294,25 +303,53 @@
 
         /*sửa/xóa gchu*/
         function openEditModal(card) {
-            //chuyển nd từ note lên modal
+            const isLocked = card.dataset.locked === "1";
+            let noteTitle = card.dataset.title;
+            let noteContent = card.dataset.content;
+            let noteImages = JSON.parse(card.dataset.images || '[]');
+
+            if (isLocked) {
+                const password = prompt("Ghi chú này đã được khóa. Vui lòng nhập mật khẩu bảo mật:");
+                if (!password) return; 
+
+                try {
+                    const res = await fetch(`/notes/${card.dataset.id}/unlock`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': CSRF,
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({ password: password })
+                    });
+
+                    const data = await res.json();
+
+                    //mở khóa/sai pass
+                    if (data.success) {
+                        //dữ liệu thật từ sv trả về
+                        noteTitle = data.title;
+                        noteContent = data.content;
+                        noteImages = data.images;
+                    } else {
+                        alert(data.message || "Sai mật khẩu!");
+                        return;
+                    }
+                } catch (e) {
+                    alert("Lỗi kết nối khi mở khóa!");
+                    return;
+                }
+            }
+
+            // đổ dữ liệu vào Modal
             document.getElementById('editNoteId').value = card.dataset.id;
-            document.getElementById('editTitle').value = card.dataset.title;
-            document.getElementById('editContent').value = card.dataset.content;
+            document.getElementById('editTitle').value = noteTitle;
+            document.getElementById('editContent').value = noteContent;
 
-            //ktra tag htại của note
-            const noteLabels = card.dataset.labels ? card.dataset.labels.split(',') : [];
-            document.querySelectorAll('.edit-label-cb').forEach(cb => {
-                cb.checked = noteLabels.includes(cb.value);
-            });
-
-            //chuyển dữ liệu ảnh của note khác trong lần chỉnh sửa trước sang note cần sửa hiện tại
-            removeImageIds = [];
-            newSelectedFiles = [];
-            const images = JSON.parse(card.dataset.images || '[]');
+            // 3. Render ds ảnh
             const imgContainer = document.getElementById('editImagesContainer');
             imgContainer.innerHTML = '';
-
-            images.forEach(img => {
+            noteImages.forEach(img => {
                 const div = document.createElement('div');
                 div.className = 'relative group rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-700 aspect-square';
                 div.dataset.imgId = img.id;
@@ -328,10 +365,19 @@
                 imgContainer.appendChild(div);
             });
 
-            //reset phần thêm ảnh trong trường hợp chưa lưu lại edit trước trong note (cũ lẫn mới)
+            //xử lý label
+            const noteLabels = card.dataset.labels ? card.dataset.labels.split(',') : [];
+            document.querySelectorAll('.edit-label-cb').forEach(cb => {
+                cb.checked = noteLabels.includes(cb.value);
+            });
+
+            //reset khuôn dữ liệu khi mở gchu mới
+            removeImageIds = [];
+            newSelectedFiles = [];
             document.getElementById('editImagesInput').value = '';
             document.getElementById('newImagesPreview').innerHTML = '';
 
+            //hiển thị Modal
             document.getElementById('editModal').classList.remove('hidden');
             document.body.classList.add('overflow-hidden');
         }

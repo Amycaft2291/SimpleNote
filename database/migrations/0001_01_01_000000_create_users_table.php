@@ -9,29 +9,39 @@ return new class extends Migration
 
     public function up(): void
     {
+        //ttin ng dùng
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            // Thay username bằng display_name
             $table->string('display_name'); 
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
-            $table->string('password'); // Để lưu dạng bcrypt [cite: 40]
+            $table->string('password');
             
-            // Quản lý kích hoạt tài khoản [cite: 42, 213]
+            $table->string('note_password')->nullable();
+            $table->integer('wrong_password_count')->default(0);
+            $table->timestamp('locked_until')->nullable(); 
+            
+            //kích hoạt tk
             $table->boolean('is_activated')->default(false);
             $table->string('activation_token')->nullable();
+
+            //giao diện ng dùng
+            $table->integer('font_size')->default(16);
+            $table->string('note_color')->default('#ffffff'); 
+            $table->string('theme')->default('light');
             
             $table->rememberToken();
             $table->timestamps();
         });
-        // 2. Bảng Password Reset [cite: 61]
+
+        //reset pass
         Schema::create('password_reset_tokens', function (Blueprint $table) {
             $table->string('email')->primary();
             $table->string('token');
             $table->timestamp('created_at')->nullable();
         });
 
-        // 3. Bảng Sessions để duy trì đăng nhập
+        //remember me -> giữ phiên đn
         Schema::create('sessions', function (Blueprint $table) {
             $table->string('id')->primary();
             $table->foreignId('user_id')->nullable()->index();

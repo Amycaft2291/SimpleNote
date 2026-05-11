@@ -128,12 +128,13 @@
         <div id="notesContainer" class="masonry-grid">
             <?php $__empty_1 = true; $__currentLoopData = $notes; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $note): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
                 <div class="masonry-item group cursor-pointer note-card" 
-                    data-id="<?php echo e($note->id); ?>" 
+                    data-id="<?php echo e($note->id); ?>"
+                    data-locked="<?php echo e($note->is_locked ? 1 : 0); ?>"
                     data-color="<?php echo e($userUI->bg); ?>"
-                    data-title="<?php echo e(e($note->title)); ?>"
-                    data-content="<?php echo e(e($note->content)); ?>"
+                    data-title="<?php echo e($note->is_locked ? 'Nội dung bị khóa' : e($note->title)); ?>"
+                    data-content="<?php echo e($note->is_locked ? 'Vui lòng nhập mật khẩu để xem' : e($note->content)); ?>" 
                     data-labels="<?php echo e($note->labels->pluck('id')->join(',')); ?>"
-                    data-images="<?php echo e($note->images->toJson()); ?>"
+                    data-images="<?php echo e($note->is_locked ? '[]' : $note->images->toJson()); ?>"
                     data-pinned="<?php echo e($note->is_pinned ? 1 : 0); ?>"
                     data-timestamp="<?php echo e($note->updated_at->timestamp); ?>"
                     data-created-at="<?php echo e($note->created_at->diffForHumans()); ?>"
@@ -157,19 +158,28 @@
                                 <span><?php echo e($note->created_at->diffForHumans()); ?></span>
                             </div>
 
-                            <?php if($note->title): ?>
-                                <h2 class="note-title font-bold mb-1 <?php echo e($userUI->title); ?> leading-snug"><?php echo e($note->title); ?></h2>
+                            <?php if($note->is_locked): ?>
+                                <div class="py-6 flex flex-col items-center justify-center text-slate-400">
+                                    <span class="material-symbols-outlined text-3xl mb-2">lock</span>
+                                    <p class="text-[10px] font-bold uppercase tracking-widest">Đã khóa bảo mật</p>
+                                </div>
+                            <?php else: ?>
+                                <?php if($note->title): ?>
+                                    <h2 class="note-title font-bold mb-1 <?php echo e($userUI->title); ?> leading-snug"><?php echo e($note->title); ?></h2>
+                                <?php endif; ?>
+                                <p class="note-content line-clamp-5 text-sm <?php echo e($userUI->content); ?> leading-relaxed"><?php echo e($note->content); ?></p>
                             <?php endif; ?>
 
-                            <p class="note-content line-clamp-5 text-sm <?php echo e($userUI->content); ?> leading-relaxed"><?php echo e($note->content); ?></p>
-                            
                             
                             <?php if($note->labels->count() > 0): ?>
-                            <div class="flex flex-wrap gap-1 mt-3">
-                                <?php $__currentLoopData = $note->labels; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $lbl): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full text-white shadow-sm" style="background-color: <?php echo e($lbl->color); ?>"><?php echo e($lbl->name); ?></span>
-                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-                            </div>
+                                <div class="flex flex-wrap gap-1 mt-3">
+                                    <?php $__currentLoopData = $note->labels; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $lbl): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full text-white shadow-sm" style="background-color: <?php echo e($lbl->color); ?>">
+                                            <?php echo e($lbl->name); ?>
+
+                                        </span>
+                                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                                </div>
                             <?php endif; ?>
                         </div>
                     </div>
@@ -306,25 +316,53 @@
 
         /*sửa/xóa gchu*/
         function openEditModal(card) {
-            //chuyển nd từ note lên modal
+            const isLocked = card.dataset.locked === "1";
+            let noteTitle = card.dataset.title;
+            let noteContent = card.dataset.content;
+            let noteImages = JSON.parse(card.dataset.images || '[]');
+
+            if (isLocked) {
+                const password = prompt("Ghi chú này đã được khóa. Vui lòng nhập mật khẩu bảo mật:");
+                if (!password) return; 
+
+                try {
+                    const res = await fetch(`/notes/${card.dataset.id}/unlock`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': CSRF,
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({ password: password })
+                    });
+
+                    const data = await res.json();
+
+                    //mở khóa/sai pass
+                    if (data.success) {
+                        //dữ liệu thật từ sv trả về
+                        noteTitle = data.title;
+                        noteContent = data.content;
+                        noteImages = data.images;
+                    } else {
+                        alert(data.message || "Sai mật khẩu!");
+                        return;
+                    }
+                } catch (e) {
+                    alert("Lỗi kết nối khi mở khóa!");
+                    return;
+                }
+            }
+
+            // đổ dữ liệu vào Modal
             document.getElementById('editNoteId').value = card.dataset.id;
-            document.getElementById('editTitle').value = card.dataset.title;
-            document.getElementById('editContent').value = card.dataset.content;
+            document.getElementById('editTitle').value = noteTitle;
+            document.getElementById('editContent').value = noteContent;
 
-            //ktra tag htại của note
-            const noteLabels = card.dataset.labels ? card.dataset.labels.split(',') : [];
-            document.querySelectorAll('.edit-label-cb').forEach(cb => {
-                cb.checked = noteLabels.includes(cb.value);
-            });
-
-            //chuyển dữ liệu ảnh của note khác trong lần chỉnh sửa trước sang note cần sửa hiện tại
-            removeImageIds = [];
-            newSelectedFiles = [];
-            const images = JSON.parse(card.dataset.images || '[]');
+            // 3. Render ds ảnh
             const imgContainer = document.getElementById('editImagesContainer');
             imgContainer.innerHTML = '';
-
-            images.forEach(img => {
+            noteImages.forEach(img => {
                 const div = document.createElement('div');
                 div.className = 'relative group rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-700 aspect-square';
                 div.dataset.imgId = img.id;
@@ -340,10 +378,19 @@
                 imgContainer.appendChild(div);
             });
 
-            //reset phần thêm ảnh trong trường hợp chưa lưu lại edit trước trong note (cũ lẫn mới)
+            //xử lý label
+            const noteLabels = card.dataset.labels ? card.dataset.labels.split(',') : [];
+            document.querySelectorAll('.edit-label-cb').forEach(cb => {
+                cb.checked = noteLabels.includes(cb.value);
+            });
+
+            //reset khuôn dữ liệu khi mở gchu mới
+            removeImageIds = [];
+            newSelectedFiles = [];
             document.getElementById('editImagesInput').value = '';
             document.getElementById('newImagesPreview').innerHTML = '';
 
+            //hiển thị Modal
             document.getElementById('editModal').classList.remove('hidden');
             document.body.classList.add('overflow-hidden');
         }

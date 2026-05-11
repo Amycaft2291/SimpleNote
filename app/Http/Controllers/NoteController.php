@@ -106,4 +106,79 @@ class NoteController extends Controller
         
         return response()->json(['success' => true]);
     }
+
+    public function toggleLock(Note $note): JsonResponse
+    {
+        if ($note->user_id !== Auth::id()) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+        }
+        
+        $note->is_locked = !$note->is_locked;
+        $note->save();
+        
+        return response()->json(['success' => true]);
+    }
+
+    public function unlock(Request $request, Note $note): JsonResponse
+    {
+        $user = Auth::user();
+
+        //check xem khóa này thuộc về tk nào
+        if ($note->user_id !== $user->id) {
+            return response()->json(['success' => false, 'message' => 'Không có quyền'], 403);
+        }
+
+        //error msg
+        if ($user->locked_until && now()->lessThan($user->locked_until)) {
+            $seconds = now()->diffInSeconds($user->locked_until);
+            $minutes = ceil($seconds / 60);
+            return response()->json([
+                'success' => false, 
+                'message' => "Bạn đã nhập sai quá nhiều lần. Vui lòng thử lại sau $minutes phút."
+            ], 403);
+        }
+
+        //lấy pass db
+        $userNotePassword = $user->note_password;
+
+        if (!$userNotePassword) {
+            return response()->json(['success' => false, 'message' => 'Bạn chưa thiết lập mật khẩu ghi chú!'], 400);
+        }
+
+        //check pass input
+        if (Hash::check($request->password, $userNotePassword)) {
+            $user->update([
+                'wrong_password_count' => 0,
+                'locked_until' => null
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'title' => $note->title,
+                'content' => $note->content,
+                'images' => $note->images 
+            ]);
+        }
+
+        //đếm số lần nhập sai pass
+        $user->increment('wrong_password_count');
+
+        if ($user->wrong_password_count >= 5) {
+            $user->update([
+                'locked_until' => now()->addMinutes(5),
+                'wrong_password_count' => 0 
+            ]);
+            
+            return response()->json([
+                'success' => false, 
+                'message' => 'Bạn đã nhập sai 5 lần! Truy cập bị khóa trong 5 phút.'
+            ], 403);
+        }
+
+        $remain = 5 - $user->wrong_password_count;
+        return response()->json([
+            'success' => false, 
+            'message' => "Sai mật khẩu bảo mật! Bạn còn $remain lần thử."
+        ], 401);
+    }
 }
