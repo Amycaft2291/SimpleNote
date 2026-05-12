@@ -110,10 +110,26 @@ class NoteController extends Controller
     public function toggleLock(Note $note): JsonResponse
     {
         if ($note->user_id !== Auth::id()) {
-            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+            return response()->json(['success' => false], 403);
+        }
+
+        $user = Auth::user();
+
+        if (!$user->note_password) {
+            return response()->json([
+                'success' => false, 
+                'requires_set_password' => true 
+            ]);
+        }
+
+        if ($note->is_locked) {
+            return response()->json([
+                'success' => false, 
+                'requires_password' => true 
+            ]);
         }
         
-        $note->is_locked = !$note->is_locked;
+        $note->is_locked = true;
         $note->save();
         
         return response()->json(['success' => true]);
@@ -180,5 +196,19 @@ class NoteController extends Controller
             'success' => false, 
             'message' => "Sai mật khẩu bảo mật! Bạn còn $remain lần thử."
         ], 401);
+    }
+
+    public function setNotePassword(Request $request): JsonResponse
+    {
+        $request->validate([
+            'password' => 'required|string|min:4|confirmed',
+        ]);
+
+        $user = auth()->user();
+        $user->update([
+            'note_password' => \Illuminate\Support\Facades\Hash::make($request->password)
+        ]);
+
+        return response()->json(['success' => true, 'message' => 'Đã thiết lập mật khẩu thành công!']);
     }
 }

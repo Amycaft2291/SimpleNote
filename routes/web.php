@@ -38,7 +38,8 @@ Route::middleware(['auth'])->group(function () {
     Route::patch ('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    //mở khóa gchu
+    //mở/khóa/đặt pass gchu
+    Route::post('/user/set-note-password', [NoteController::class, 'setNotePassword'])->name('user.set-note-password');
     Route::post('/notes/{note}/unlock', [App\Http\Controllers\NoteController::class, 'unlock'])->name('notes.unlock');
 
     //ghim + khóa
