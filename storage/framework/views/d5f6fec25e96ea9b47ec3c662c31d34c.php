@@ -147,6 +147,20 @@
                             <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' <?php echo e($note->is_pinned ? 1 : 0); ?>;">push_pin</span>
                         </button>
 
+                        <div class="p-5 <?php echo e($note->is_pinned ? 'pt-8' : ''); ?>">
+                            <h2 class="text-base font-bold text-slate-900 mb-1.5 leading-snug break-words">
+                                <?php echo e($note->title); ?>
+
+                            </h2>
+                            <?php if($note->content): ?>
+                                <p class="text-slate-500 text-sm leading-relaxed line-clamp-4 break-words">
+                                    <?php echo e($note->content); ?>
+
+                                </p>
+                            <?php endif; ?>
+                            <p class="text-xs text-slate-300 mt-3"><?php echo e($note->created_at->diffForHumans()); ?></p>
+                        </div>
+
                         <div class="p-4">
                             
                             <div class="mb-3 pb-3 border-b <?php echo e($userUI->border); ?> flex justify-between items-center text-[10px] <?php echo e($userUI->muted); ?> font-bold uppercase tracking-wider">
