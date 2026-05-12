@@ -131,11 +131,23 @@
                     onclick="openEditModal(this)">
                     
                     <div class="rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden relative shadow-sm hover:shadow-md transition-all" style="background-color: {{ $userUI->bg }} !important;">                       
-                        {{-- Nút Pin --}}
+                        {{--nút ghim--}}
                         <button onclick="event.stopPropagation(); pinNote(this, {{ $note->id }})"
                             class="absolute top-2 right-2 z-10 p-1 rounded-full opacity-0 group-hover:opacity-100 transition-all {{ $note->is_pinned ? '!opacity-100 text-yellow-500' : 'text-slate-400 hover:text-yellow-500 bg-black/5' }}">
                             <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' {{ $note->is_pinned ? 1 : 0 }};">push_pin</span>
                         </button>
+
+                        <div class="p-5 {{ $note->is_pinned ? 'pt-8' : '' }}">
+                            <h2 class="text-base font-bold text-slate-900 mb-1.5 leading-snug break-words">
+                                {{ $note->title }}
+                            </h2>
+                            @if($note->content)
+                                <p class="text-slate-500 text-sm leading-relaxed line-clamp-4 break-words">
+                                    {{ $note->content }}
+                                </p>
+                            @endif
+                            <p class="text-xs text-slate-300 mt-3">{{ $note->created_at->diffForHumans() }}</p>
+                        </div>
 
                         <div class="p-4">
                             {{--ngày tháng--}}
