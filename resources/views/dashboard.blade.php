@@ -147,14 +147,16 @@
 
                                 {{--nút ghim + khóa--}}
                                 <div class="flex gap-1 shrink-0">
-                                    {{--ghim--}}
-                                    <button onclick="event.stopPropagation(); pinNote(this, {{ $note->id }})"
+                                    {{--ghim --}}
+                                    <button type="button" 
+                                        onclick="togglePin(event, this, {{ $note->id }})"
                                         class="p-1.5 rounded-lg transition-all {{ $note->is_pinned ? 'text-yellow-500 bg-yellow-50' : 'text-slate-400 hover:bg-black/5 opacity-0 group-hover:opacity-100' }}">
                                         <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' {{ $note->is_pinned ? 1 : 0 }};">push_pin</span>
                                     </button>
 
-                                    {{--khóa--}}
-                                    <button onclick="event.stopPropagation(); toggleLock(this, {{ $note->id }})"
+                                    {{--khóa --}}
+                                    <button type="button" 
+                                        onclick="toggleLock(event, this, {{ $note->id }})"
                                         class="p-1.5 rounded-lg transition-all {{ $note->is_locked ? 'text-blue-500 bg-blue-50' : 'text-slate-400 hover:bg-black/5 opacity-0 group-hover:opacity-100' }}">
                                         <span class="material-symbols-outlined text-[20px]">
                                             {{ $note->is_locked ? 'lock' : 'lock_open' }}
@@ -496,12 +498,51 @@
             if (res.ok) window.location.reload();
         }
 
-        async function pinNote(btn, id) {
-            const res = await fetch(`/notes/${id}/pin`, {
-                method: 'PATCH',
-                headers: { 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json', 'Content-Type': 'application/json' }
-            });
-            if (res.ok) window.location.reload();
+        async function togglePin(event, button, noteId) {
+            if (event) event.stopPropagation();
+
+            try {
+                const response = await fetch(`/notes/${noteId}/toggle-pin`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    window.location.reload(); 
+                } else {
+                    alert('Có lỗi xảy ra khi ghim ghi chú');
+                }
+            } catch (error) {
+                console.error('Lỗi kết nối:', error);
+            }
+        }
+
+        async function toggleLock(event, button, noteId) {
+            if (event) event.stopPropagation();
+            try {
+                const response = await fetch(`/notes/${noteId}/toggle-lock`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    window.location.reload();
+                }
+            } catch (error) {
+                console.error('Lỗi kết nối:', error);
+            }
         }
 
         /*sort + filter*/

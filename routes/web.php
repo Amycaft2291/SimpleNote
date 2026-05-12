@@ -7,15 +7,15 @@ use App\Http\Controllers\LabelController;
 use Illuminate\Support\Facades\Route;
 use App\Models\User;
 
-// ─── Trang Welcome ────────────────────────────────────────────────────────────
+//trang welcome/login
 Route::get('/', function () {
     return redirect()->route('login');
 });
 
-// ─── Dashboard, Notes, Appearance & Labels (Cần Auth) ─────────────────────────
+//cần Auth:
 Route::middleware(['auth'])->group(function () {
 
-    // Dashboard — hiển thị tất cả ghi chú
+    //dashboard
     Route::get('/dashboard', [NoteController::class, 'index'])->name('dashboard');
 
     // Notes CRUD (RESTful, AJAX)
@@ -24,22 +24,26 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/notes/{note}',       [NoteController::class, 'destroy'])->name('notes.destroy');
     Route::patch ('/notes/{note}/pin',   [NoteController::class, 'togglePin'])->name('notes.pin');
 
-    // Quản lý Giao diện (Appearance)
+    //giao diện
     Route::get  ('/settings/appearance', [AppearanceController::class, 'edit'])->name('appearance.edit');
     Route::patch('/settings/appearance', [AppearanceController::class, 'update'])->name('appearance.update');
 
-    // Quản lý Nhãn (Labels)
+    //tag/label
     Route::post ('/labels',             [LabelController::class, 'store'])->name('labels.store');
     Route::put('/labels/{label}',       [LabelController::class, 'update'])->name('labels.update');
     Route::delete('/labels/{label}',    [LabelController::class, 'destroy'])->name('labels.destroy');
 
-    // Profile
+    //profile
     Route::get   ('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch ('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    //khóa gchu
+    //mở khóa gchu
     Route::post('/notes/{note}/unlock', [App\Http\Controllers\NoteController::class, 'unlock'])->name('notes.unlock');
+
+    //ghim + khóa
+    Route::post('/notes/{note}/toggle-pin', [NoteController::class, 'togglePin'])->name('notes.toggle-pin');
+    Route::post('/notes/{note}/toggle-lock', [NoteController::class, 'toggleLock'])->name('notes.toggle-lock');
 });
 
 // // ─── Kích hoạt tài khoản qua email ────────────────────────────────────────────
