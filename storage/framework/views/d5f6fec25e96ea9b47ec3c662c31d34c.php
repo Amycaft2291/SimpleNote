@@ -141,54 +141,63 @@
                     onclick="openEditModal(this)">
                     
                     <div class="rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden relative shadow-sm hover:shadow-md transition-all" style="background-color: <?php echo e($userUI->bg); ?> !important;">                       
-                        
-                        <button onclick="event.stopPropagation(); pinNote(this, <?php echo e($note->id); ?>)"
-                            class="absolute top-2 right-2 z-10 p-1 rounded-full opacity-0 group-hover:opacity-100 transition-all <?php echo e($note->is_pinned ? '!opacity-100 text-yellow-500' : 'text-slate-400 hover:text-yellow-500 bg-black/5'); ?>">
-                            <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' <?php echo e($note->is_pinned ? 1 : 0); ?>;">push_pin</span>
-                        </button>
-
-                        <div class="p-5 <?php echo e($note->is_pinned ? 'pt-8' : ''); ?>">
-                            <h2 class="text-base font-bold text-slate-900 mb-1.5 leading-snug break-words">
-                                <?php echo e($note->title); ?>
-
-                            </h2>
-                            <?php if($note->content): ?>
-                                <p class="text-slate-500 text-sm leading-relaxed line-clamp-4 break-words">
-                                    <?php echo e($note->content); ?>
-
-                                </p>
-                            <?php endif; ?>
-                            <p class="text-xs text-slate-300 mt-3"><?php echo e($note->created_at->diffForHumans()); ?></p>
-                        </div>
-
-                        <div class="p-4">
+                        <div class="p-5">
                             
-                            <div class="mb-3 pb-3 border-b <?php echo e($userUI->border); ?> flex justify-between items-center text-[10px] <?php echo e($userUI->muted); ?> font-bold uppercase tracking-wider">
-                                <div class="flex items-center gap-1">
-                                    <span class="material-symbols-outlined text-xs">calendar_today</span>
-                                    <?php echo e($note->created_at->format('d/m/Y')); ?>
+                            <div class="flex justify-between items-start mb-2 gap-4">
+                                <div class="flex flex-col overflow-hidden">
+                                    <h2 class="note-title font-bold text-base <?php echo e($userUI->title); ?> leading-snug break-words">
+                                        <?php echo e($note->title ?: 'Không tiêu đề'); ?>
 
+                                    </h2>
+                                    
+                                    <div class="flex items-center gap-1 text-[10px] <?php echo e($userUI->muted); ?> mt-1 font-bold uppercase tracking-wider">
+                                        <span class="material-symbols-outlined text-[12px]">calendar_today</span>
+                                        <?php echo e($note->updated_at->format('d/m/Y')); ?>
+
+                                    </div>
                                 </div>
-                                <span><?php echo e($note->created_at->diffForHumans()); ?></span>
+
+                                
+                                <div class="flex gap-1 shrink-0">
+                                    
+                                    <button onclick="event.stopPropagation(); pinNote(this, <?php echo e($note->id); ?>)"
+                                        class="p-1.5 rounded-lg transition-all <?php echo e($note->is_pinned ? 'text-yellow-500 bg-yellow-50' : 'text-slate-400 hover:bg-black/5 opacity-0 group-hover:opacity-100'); ?>">
+                                        <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' <?php echo e($note->is_pinned ? 1 : 0); ?>;">push_pin</span>
+                                    </button>
+
+                                    
+                                    <button onclick="event.stopPropagation(); toggleLock(this, <?php echo e($note->id); ?>)"
+                                        class="p-1.5 rounded-lg transition-all <?php echo e($note->is_locked ? 'text-blue-500 bg-blue-50' : 'text-slate-400 hover:bg-black/5 opacity-0 group-hover:opacity-100'); ?>">
+                                        <span class="material-symbols-outlined text-[20px]">
+                                            <?php echo e($note->is_locked ? 'lock' : 'lock_open'); ?>
+
+                                        </span>
+                                    </button>
+                                </div>
                             </div>
 
-                            <?php if($note->is_locked): ?>
-                                <div class="py-6 flex flex-col items-center justify-center text-slate-400">
-                                    <span class="material-symbols-outlined text-3xl mb-2">lock</span>
-                                    <p class="text-[10px] font-bold uppercase tracking-widest">Đã khóa bảo mật</p>
-                                </div>
-                            <?php else: ?>
-                                <?php if($note->title): ?>
-                                    <h2 class="note-title font-bold mb-1 <?php echo e($userUI->title); ?> leading-snug"><?php echo e($note->title); ?></h2>
+                            
+                            <div class="mt-3">
+                                <?php if($note->is_locked): ?>
+                                    <div class="py-6 flex flex-col items-center justify-center text-slate-400 bg-black/5 rounded-lg">
+                                        <span class="material-symbols-outlined text-3xl mb-2">encrypted</span>
+                                        <p class="text-[10px] font-bold uppercase tracking-widest">Ghi chú đã bị khóa</p>
+                                    </div>
+                                <?php else: ?>
+                                    <?php if($note->content): ?>
+                                        <p class="note-content line-clamp-5 text-sm <?php echo e($userUI->content); ?> leading-relaxed break-words">
+                                            <?php echo e($note->content); ?>
+
+                                        </p>
+                                    <?php endif; ?>
                                 <?php endif; ?>
-                                <p class="note-content line-clamp-5 text-sm <?php echo e($userUI->content); ?> leading-relaxed"><?php echo e($note->content); ?></p>
-                            <?php endif; ?>
+                            </div>
 
                             
                             <?php if($note->labels->count() > 0): ?>
-                                <div class="flex flex-wrap gap-1 mt-3">
+                                <div class="flex flex-wrap gap-1 mt-4">
                                     <?php $__currentLoopData = $note->labels; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $lbl): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full text-white shadow-sm" style="background-color: <?php echo e($lbl->color); ?>">
+                                        <span class="text-[9px] font-bold px-2 py-0.5 rounded-full text-white shadow-sm" style="background-color: <?php echo e($lbl->color); ?>">
                                             <?php echo e($lbl->name); ?>
 
                                         </span>
@@ -199,7 +208,7 @@
                     </div>
                 </div>
             <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
-                <div class="col-span-4 text-center py-20 text-slate-400">
+                <div class="col-span-full text-center py-20 text-slate-400">
                     <span class="material-symbols-outlined text-6xl mb-4 block">note_stack</span>
                     <p class="text-lg font-medium">Chưa có ghi chú nào</p>
                     <p class="text-sm mt-1">Bấm "Tạo ghi chú mới" để bắt đầu!</p>

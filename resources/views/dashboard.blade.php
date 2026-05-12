@@ -132,13 +132,13 @@
                     
                     <div class="rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden relative shadow-sm hover:shadow-md transition-all" style="background-color: {{ $userUI->bg }} !important;">                       
                         <div class="p-5">
-                            {{--title + tgian--}}
+                            {{--header--}}
                             <div class="flex justify-between items-start mb-2 gap-4">
                                 <div class="flex flex-col overflow-hidden">
                                     <h2 class="note-title font-bold text-base {{ $userUI->title }} leading-snug break-words">
                                         {{ $note->title ?: 'Không tiêu đề' }}
                                     </h2>
-                                    {{-- Ngày tháng nhỏ gọn nằm ngay dưới tiêu đề --}}
+                                    {{--tgian--}}
                                     <div class="flex items-center gap-1 text-[10px] {{ $userUI->muted }} mt-1 font-bold uppercase tracking-wider">
                                         <span class="material-symbols-outlined text-[12px]">calendar_today</span>
                                         {{ $note->updated_at->format('d/m/Y') }}
@@ -208,7 +208,7 @@
                 <div class="p-5 overflow-y-auto space-y-4 flex-1">
                     <input type="hidden" id="editNoteId">
 
-                    {{--tiêu đề--}}
+                    {{--title--}}
                     <input id="editTitle" type="text" placeholder="Tiêu đề"
                         class="w-full font-bold bg-transparent border-none outline-none dark:text-white focus:ring-0 px-0">
                     
@@ -216,7 +216,7 @@
                     <textarea id="editContent" rows="5" placeholder="Nội dung ghi chú..."
                         class="w-full text-sm bg-transparent border-none outline-none resize-none dark:text-slate-300 focus:ring-0 px-0 leading-relaxed"></textarea>
                     
-                    {{--ảnh/img--}}
+                    {{--img--}}
                     <div class="border-t border-slate-100 dark:border-slate-700 pt-4">
                         <p class="text-xs font-bold text-slate-400 uppercase mb-3">Ảnh đính kèm</p>
                         
@@ -251,7 +251,7 @@
                     </div>
                 </div>
 
-                {{-- Footer actions --}}
+                {{--các nút ở dưới footer--}}
                 <div class="px-5 py-3 bg-slate-50 dark:bg-slate-900/50 border-t border-slate-100 dark:border-slate-700 flex justify-between items-center">
                     <button onclick="deleteNote()" class="text-sm text-red-500 hover:text-red-700 font-medium flex items-center gap-1">
                         <span class="material-symbols-outlined text-base">delete</span> Xóa
@@ -366,7 +366,7 @@
             document.getElementById('editTitle').value = noteTitle;
             document.getElementById('editContent').value = noteContent;
 
-            // 3. Render ds ảnh
+            // render ds ảnh
             const imgContainer = document.getElementById('editImagesContainer');
             imgContainer.innerHTML = '';
             noteImages.forEach(img => {
@@ -385,7 +385,7 @@
                 imgContainer.appendChild(div);
             });
 
-            //xử lý label
+            //xử lý label/tag
             const noteLabels = card.dataset.labels ? card.dataset.labels.split(',') : [];
             document.querySelectorAll('.edit-label-cb').forEach(cb => {
                 cb.checked = noteLabels.includes(cb.value);
@@ -407,7 +407,7 @@
             document.body.classList.remove('overflow-hidden');
         }
 
-        // Đóng modal khi bấm ra ngoài
+        //đóng modal khi bấm ra ngoài
         document.getElementById('editModal').addEventListener('click', function(e) {
             if (e.target === this) closeEditModal();
         });
@@ -420,9 +420,9 @@
         function previewNewImages(input) {
             const preview = document.getElementById('newImagesPreview');
             
-            // Đẩy file mới vào mảng newSelectedFiles và render thêm thay vì ghi đè HTML
+            //đẩy file mới vào mảng newSelectedFiles và render thêm thay vì ghi đè HTML
             Array.from(input.files).forEach(file => {
-                newSelectedFiles.push(file); // Lưu vào mảng tạm
+                newSelectedFiles.push(file); //lưu vào mảng tạm trc đã
                 
                 const reader = new FileReader();
                 reader.onload = e => {
@@ -443,11 +443,11 @@
                 reader.readAsDataURL(file);
             });
             
-            // Quan trọng: Reset input để browser cho phép user chọn lại file nếu muốn hoặc mở dialog lần sau mà không lỗi
+            //reset input để browser cho ng dùng chọn lại file nếu muốn hoặc mở dialog lần sau mà k lỗi
             input.value = ''; 
         }
 
-        // [THÊM HÀM MỚI NÀY] Hỗ trợ người dùng đổi ý xóa ảnh vừa mới thêm
+        // giúp người dùng đổi ý xóa ảnh vừa mới thêm
         function removeNewSelectedImage(btn, fileName) {
             newSelectedFiles = newSelectedFiles.filter(f => f.name !== fileName);
             btn.closest('.relative').remove();
@@ -463,17 +463,17 @@
             formData.append('title', title || '(Không có tiêu đề)');
             formData.append('content', content);
 
-            // Ảnh mới
+            //img mới
             for (let i = 0; i < newSelectedFiles.length; i++) {
                 formData.append('images[]', newSelectedFiles[i]);
             }
 
-            // Nhãn được chọn
+            //tag đc chọn
             document.querySelectorAll('.edit-label-cb:checked').forEach(cb => {
                 formData.append('label_ids[]', cb.value);
             });
 
-            // ID ảnh cần xóa
+            //img id cần xóa
             removeImageIds.forEach(imgId => formData.append('remove_image_ids[]', imgId));
 
             const res = await fetch(`/notes/${id}`, {
@@ -504,9 +504,7 @@
             if (res.ok) window.location.reload();
         }
 
-        /* ==========================================
-        4. LỌC ĐA LỰA CHỌN & TÌM KIẾM
-        ========================================== */
+        /*sort + filter*/
         function toggleLabelFilter(cb) {
             if (cb.checked) {
                 selectedLabels.push(cb.value);
@@ -518,7 +516,7 @@
         }
 
         function filterByLabel(value) {
-            // Reset tất cả checkbox sidebar
+            //reset tất cả checkbox sidebar
             document.querySelectorAll('#sidebarLabelList input[type="checkbox"]').forEach(cb => {
                 cb.checked = false;
             });
@@ -564,9 +562,7 @@
             }
         }
 
-        /* ==========================================
-        5. VIEW & SẮP XẾP DOM
-        ========================================== */
+        /*view + DOM*/
         function setView(mode) {
             const container = document.getElementById('notesContainer');
             const gridBtn = document.getElementById('gridBtn');
@@ -612,7 +608,7 @@
             cards.forEach(card => container.appendChild(card));
         }
 
-        // Khởi tạo
+        //tạo DOM
         document.addEventListener('DOMContentLoaded', () => {
             const savedView = localStorage.getItem('sn_view') || 'grid';
             setView(savedView);
