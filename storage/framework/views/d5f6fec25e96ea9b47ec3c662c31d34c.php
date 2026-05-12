@@ -287,13 +287,13 @@
 
         window.NoteLabels = <?php echo json_encode($labels ?? [], 15, 512) ?>;
 
-        /*biến toàn cục vs trạng thái*/
+        //biến toàn cục vs tthái
         let selectedLabels = [];
         let removeImageIds = [];
         let currentSortOrder = 'newest';
         let newSelectedFiles = [];
 
-        /*thêm gchu*/
+        //thêm gchu
         function openCreateForm() {
             document.getElementById('createPlaceholder').classList.add('hidden');
             document.getElementById('createForm').classList.remove('hidden');
@@ -339,7 +339,7 @@
             }
         }
 
-        /*sửa/xóa gchu*/
+        //sửa/xóa gchu
         function openEditModal(card) {
             const isLocked = card.dataset.locked === "1";
             let noteTitle = card.dataset.title;
@@ -461,11 +461,11 @@
                 reader.readAsDataURL(file);
             });
             
-            //reset input để browser cho ng dùng chọn lại file nếu muốn hoặc mở dialog lần sau mà k lỗi
+            //reset input để browser cho ng dùng chọn lại file nếu muốn/mở dialog lần sau k lỗi
             input.value = ''; 
         }
 
-        // giúp người dùng đổi ý xóa ảnh vừa mới thêm
+        // nếu đổi ý -> xóa ảnh vừa mới thêm
         function removeNewSelectedImage(btn, fileName) {
             newSelectedFiles = newSelectedFiles.filter(f => f.name !== fileName);
             btn.closest('.relative').remove();
@@ -514,6 +514,7 @@
             if (res.ok) window.location.reload();
         }
 
+        //ghim + xóa
         async function togglePin(event, button, noteId) {
             if (event) {
                 event.stopPropagation();
@@ -535,11 +536,10 @@
                 if (data.success) {
                     window.location.reload();
                 } else {
-                    alert('Lỗi: ' + (data.message || 'Không thể ghim ghi chú'));
+                    console.error('Lỗi từ server:', data);
                 }
             } catch (error) {
                 console.error('Lỗi kết nối:', error);
-                alert('Không thể kết nối đến máy chủ');
             }
         }
 
@@ -548,8 +548,6 @@
                 event.stopPropagation();
                 event.preventDefault();
             }
-
-            if (!confirm('Bạn có muốn thay đổi trạng thái bảo mật của ghi chú này?')) return;
 
             try {
                 const response = await fetch(`/notes/${noteId}/toggle-lock`, {
@@ -565,16 +563,13 @@
 
                 if (data.success) {
                     window.location.reload();
-                } else {
-                    alert('Lỗi: ' + (data.message || 'Không thể thực hiện thao tác khóa'));
                 }
             } catch (error) {
                 console.error('Lỗi kết nối:', error);
-                alert('Không thể kết nối đến máy chủ');
             }
         }
 
-        /*sort + filter*/
+        //sort + filter
         function toggleLabelFilter(cb) {
             if (cb.checked) {
                 selectedLabels.push(cb.value);
@@ -632,7 +627,7 @@
             }
         }
 
-        /*view + DOM*/
+        //view + DOM
         function setView(mode) {
             const container = document.getElementById('notesContainer');
             const gridBtn = document.getElementById('gridBtn');

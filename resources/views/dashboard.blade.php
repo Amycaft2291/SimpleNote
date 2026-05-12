@@ -324,7 +324,7 @@
         }
 
         //sửa/xóa gchu
-        function openEditModal(card) {
+        async function openEditModal(card) {
             const isLocked = card.dataset.locked === "1";
             let noteTitle = card.dataset.title;
             let noteContent = card.dataset.content;
