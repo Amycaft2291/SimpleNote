@@ -41,13 +41,13 @@
             <div id="createBar" class="rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 transition-all hover:shadow-md" 
                  style="background-color: {{ $userUI->bg }} !important;">
                 
-                {{-- Thanh mặc định khi chưa bấm vào --}}
+                {{--form chưa mở--}}
                 <div id="createPlaceholder" class="flex items-center justify-between p-4 cursor-pointer {{ $userUI->content }}" onclick="openCreateForm()">
                     <span class="font-medium text-sm">Tạo ghi chú mới...</span>
                     <span class="material-symbols-outlined">image</span>
                 </div>
 
-                {{-- Form khi mở ra (Hợp nhất UI của bạn và Input mới) --}}
+                {{--form đã mở--}}
                 <div id="createForm" class="hidden p-4 space-y-3">
                     <input id="newTitle" type="text" placeholder="Tiêu đề" 
                            class="w-full font-bold border-none outline-none focus:ring-0 px-0 {{ $userUI->title }}" 
@@ -57,14 +57,14 @@
                               class="w-full text-sm border-none outline-none resize-none focus:ring-0 px-0 {{ $userUI->content }}" 
                               style="background-color: transparent !important;"></textarea>
                     
-                    {{-- MỚI: Phần chọn Ảnh --}}
+                    {{--chọn ảnh--}}
                     <div>
                         <label class="text-[10px] font-bold {{ $userUI->muted }} uppercase block mb-1">Ảnh đính kèm</label>
                         <input type="file" id="newImages" multiple accept="image/*" 
                                class="text-sm {{ $userUI->muted }} file:mr-4 file:py-1 file:px-3 file:rounded-full file:border-0 file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
                     </div>
                     
-                    {{-- MỚI: Phần chọn Nhãn (Labels) --}}
+                    {{--chọn tag--}}
                     <div class="border-t {{ $userUI->border }} pt-3">
                         <p class="text-[10px] font-bold {{ $userUI->muted }} uppercase mb-2">Gán Nhãn</p>
                         <div class="flex flex-wrap gap-2">
@@ -80,7 +80,7 @@
                         </div>
                     </div>
 
-                    {{-- Các nút điều khiển --}}
+                    {{--các nút điều khiển--}}
                     <div class="flex justify-end gap-2 pt-2 border-t {{ $userUI->border }}">
                         <button type="button" onclick="closeCreateForm()" class="px-4 py-1.5 text-sm rounded-lg hover:bg-black/5 {{ $userUI->content }}">Đóng</button>
                         <button type="button" onclick="saveNote()" class="px-4 py-1.5 text-sm font-semibold bg-blue-600 text-white rounded-lg hover:bg-blue-700">Lưu</button>
@@ -89,12 +89,12 @@
             </div>
         </div>
 
-        {{--toolbar tùy chỉnh hiển thị v sắp xếp--}}
+        {{--toolbar nhỏ--}}
         <div class="flex flex-wrap items-center justify-between mb-6 gap-4">
             <h1 class="text-2xl font-black dark:text-white" id="pageTitle">Tất cả ghi chú</h1>
             
             <div class="flex items-center gap-3 bg-white dark:bg-slate-800 p-1.5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
-                {{-- Sắp xếp --}}
+                {{--sort--}}
                 <div class="flex items-center border-r border-slate-100 dark:border-slate-700 pr-2 mr-2">
                     <button onclick="toggleSortOrder()" id="sortBtn" title="Đổi thứ tự sắp xếp" class="p-1.5 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-lg flex items-center gap-1 transition-all">
                         <span class="material-symbols-outlined text-sm" id="sortIcon">south</span>
@@ -102,7 +102,7 @@
                     </button>
                 </div>
 
-                {{-- Grid/List View --}}
+                {{--chế độ xem lưới--}}
                 <div class="flex gap-1">
                     <button id="gridBtn" onclick="setView('grid')" class="p-1.5 rounded-lg transition-all" title="Chế độ lưới">
                         <span class="material-symbols-outlined text-sm">grid_view</span>
@@ -499,7 +499,10 @@
         }
 
         async function togglePin(event, button, noteId) {
-            if (event) event.stopPropagation();
+            if (event) {
+                event.stopPropagation();
+                event.preventDefault();
+            }
 
             try {
                 const response = await fetch(`/notes/${noteId}/toggle-pin`, {
@@ -514,17 +517,22 @@
                 const data = await response.json();
 
                 if (data.success) {
-                    window.location.reload(); 
+                    window.location.reload();
                 } else {
-                    alert('Có lỗi xảy ra khi ghim ghi chú');
+                    alert('Lỗi: ' + (data.message || 'Không thể ghim ghi chú'));
                 }
             } catch (error) {
                 console.error('Lỗi kết nối:', error);
+                alert('Không thể kết nối đến máy chủ');
             }
         }
 
         async function toggleLock(event, button, noteId) {
-            if (event) event.stopPropagation();
+            if (event) {
+                event.stopPropagation();
+                event.preventDefault();
+            }
+
             try {
                 const response = await fetch(`/notes/${noteId}/toggle-lock`, {
                     method: 'POST',
@@ -539,9 +547,12 @@
 
                 if (data.success) {
                     window.location.reload();
+                } else {
+                    alert('Không thể thực hiện thao tác khóa ghi chú.');
                 }
             } catch (error) {
                 console.error('Lỗi kết nối:', error);
+                alert('Có lỗi xảy ra khi kết nối tới máy chủ.');
             }
         }
 

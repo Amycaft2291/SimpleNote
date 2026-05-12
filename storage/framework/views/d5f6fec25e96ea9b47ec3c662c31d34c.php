@@ -160,13 +160,15 @@
                                 
                                 <div class="flex gap-1 shrink-0">
                                     
-                                    <button onclick="event.stopPropagation(); pinNote(this, <?php echo e($note->id); ?>)"
+                                    <button type="button" 
+                                        onclick="togglePin(event, this, <?php echo e($note->id); ?>)"
                                         class="p-1.5 rounded-lg transition-all <?php echo e($note->is_pinned ? 'text-yellow-500 bg-yellow-50' : 'text-slate-400 hover:bg-black/5 opacity-0 group-hover:opacity-100'); ?>">
                                         <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' <?php echo e($note->is_pinned ? 1 : 0); ?>;">push_pin</span>
                                     </button>
 
                                     
-                                    <button onclick="event.stopPropagation(); toggleLock(this, <?php echo e($note->id); ?>)"
+                                    <button type="button" 
+                                        onclick="toggleLock(event, this, <?php echo e($note->id); ?>)"
                                         class="p-1.5 rounded-lg transition-all <?php echo e($note->is_locked ? 'text-blue-500 bg-blue-50' : 'text-slate-400 hover:bg-black/5 opacity-0 group-hover:opacity-100'); ?>">
                                         <span class="material-symbols-outlined text-[20px]">
                                             <?php echo e($note->is_locked ? 'lock' : 'lock_open'); ?>
@@ -382,7 +384,7 @@
             document.getElementById('editTitle').value = noteTitle;
             document.getElementById('editContent').value = noteContent;
 
-            // 3. Render ds ảnh
+            // render ds ảnh
             const imgContainer = document.getElementById('editImagesContainer');
             imgContainer.innerHTML = '';
             noteImages.forEach(img => {
@@ -401,7 +403,7 @@
                 imgContainer.appendChild(div);
             });
 
-            //xử lý label
+            //xử lý label/tag
             const noteLabels = card.dataset.labels ? card.dataset.labels.split(',') : [];
             document.querySelectorAll('.edit-label-cb').forEach(cb => {
                 cb.checked = noteLabels.includes(cb.value);
@@ -423,7 +425,7 @@
             document.body.classList.remove('overflow-hidden');
         }
 
-        // Đóng modal khi bấm ra ngoài
+        //đóng modal khi bấm ra ngoài
         document.getElementById('editModal').addEventListener('click', function(e) {
             if (e.target === this) closeEditModal();
         });
@@ -436,9 +438,9 @@
         function previewNewImages(input) {
             const preview = document.getElementById('newImagesPreview');
             
-            // Đẩy file mới vào mảng newSelectedFiles và render thêm thay vì ghi đè HTML
+            //đẩy file mới vào mảng newSelectedFiles và render thêm thay vì ghi đè HTML
             Array.from(input.files).forEach(file => {
-                newSelectedFiles.push(file); // Lưu vào mảng tạm
+                newSelectedFiles.push(file); //lưu vào mảng tạm trc đã
                 
                 const reader = new FileReader();
                 reader.onload = e => {
@@ -459,11 +461,11 @@
                 reader.readAsDataURL(file);
             });
             
-            // Quan trọng: Reset input để browser cho phép user chọn lại file nếu muốn hoặc mở dialog lần sau mà không lỗi
+            //reset input để browser cho ng dùng chọn lại file nếu muốn hoặc mở dialog lần sau mà k lỗi
             input.value = ''; 
         }
 
-        // [THÊM HÀM MỚI NÀY] Hỗ trợ người dùng đổi ý xóa ảnh vừa mới thêm
+        // giúp người dùng đổi ý xóa ảnh vừa mới thêm
         function removeNewSelectedImage(btn, fileName) {
             newSelectedFiles = newSelectedFiles.filter(f => f.name !== fileName);
             btn.closest('.relative').remove();
@@ -479,17 +481,17 @@
             formData.append('title', title || '(Không có tiêu đề)');
             formData.append('content', content);
 
-            // Ảnh mới
+            //img mới
             for (let i = 0; i < newSelectedFiles.length; i++) {
                 formData.append('images[]', newSelectedFiles[i]);
             }
 
-            // Nhãn được chọn
+            //tag đc chọn
             document.querySelectorAll('.edit-label-cb:checked').forEach(cb => {
                 formData.append('label_ids[]', cb.value);
             });
 
-            // ID ảnh cần xóa
+            //img id cần xóa
             removeImageIds.forEach(imgId => formData.append('remove_image_ids[]', imgId));
 
             const res = await fetch(`/notes/${id}`, {
@@ -512,17 +514,67 @@
             if (res.ok) window.location.reload();
         }
 
-        async function pinNote(btn, id) {
-            const res = await fetch(`/notes/${id}/pin`, {
-                method: 'PATCH',
-                headers: { 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json', 'Content-Type': 'application/json' }
-            });
-            if (res.ok) window.location.reload();
+        async function togglePin(event, button, noteId) {
+            if (event) {
+                event.stopPropagation();
+                event.preventDefault();
+            }
+
+            try {
+                const response = await fetch(`/notes/${noteId}/toggle-pin`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    window.location.reload();
+                } else {
+                    alert('Lỗi: ' + (data.message || 'Không thể ghim ghi chú'));
+                }
+            } catch (error) {
+                console.error('Lỗi kết nối:', error);
+                alert('Không thể kết nối đến máy chủ');
+            }
         }
 
-        /* ==========================================
-        4. LỌC ĐA LỰA CHỌN & TÌM KIẾM
-        ========================================== */
+        async function toggleLock(event, button, noteId) {
+            if (event) {
+                event.stopPropagation();
+                event.preventDefault();
+            }
+
+            if (!confirm('Bạn có muốn thay đổi trạng thái bảo mật của ghi chú này?')) return;
+
+            try {
+                const response = await fetch(`/notes/${noteId}/toggle-lock`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    window.location.reload();
+                } else {
+                    alert('Lỗi: ' + (data.message || 'Không thể thực hiện thao tác khóa'));
+                }
+            } catch (error) {
+                console.error('Lỗi kết nối:', error);
+                alert('Không thể kết nối đến máy chủ');
+            }
+        }
+
+        /*sort + filter*/
         function toggleLabelFilter(cb) {
             if (cb.checked) {
                 selectedLabels.push(cb.value);
@@ -534,7 +586,7 @@
         }
 
         function filterByLabel(value) {
-            // Reset tất cả checkbox sidebar
+            //reset tất cả checkbox sidebar
             document.querySelectorAll('#sidebarLabelList input[type="checkbox"]').forEach(cb => {
                 cb.checked = false;
             });
@@ -580,9 +632,7 @@
             }
         }
 
-        /* ==========================================
-        5. VIEW & SẮP XẾP DOM
-        ========================================== */
+        /*view + DOM*/
         function setView(mode) {
             const container = document.getElementById('notesContainer');
             const gridBtn = document.getElementById('gridBtn');
@@ -628,7 +678,7 @@
             cards.forEach(card => container.appendChild(card));
         }
 
-        // Khởi tạo
+        //tạo DOM
         document.addEventListener('DOMContentLoaded', () => {
             const savedView = localStorage.getItem('sn_view') || 'grid';
             setView(savedView);
