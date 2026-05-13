@@ -52,8 +52,8 @@ class NoteController extends Controller
         $validated = $request->validate([
             'title'       => 'nullable|string|max:255',
             'content'     => 'nullable|string',
-            'label_ids'   => 'nullable|array',
-            'label_ids.*' => 'integer|exists:labels,id',
+            'labels'   => 'nullable|array',
+            'labels.*' => 'integer|exists:labels,id',
             'images'      => 'nullable|array',
             'images.*'    => 'file|image|max:5120',
         ]);
@@ -86,19 +86,17 @@ class NoteController extends Controller
         $validated = $request->validate([
             'title'   => 'nullable|string|max:255',
             'content' => 'nullable|string',
-            'label_ids'   => 'nullable|array',
+            'labels'   => 'nullable|array',
+            'labels.*' => 'integer|exists:labels,id',
         ]);
 
         $note->update([
-            'title'   => $validated['title'] ?? $note->title,
-            'content' => $validated['content'] ?? $note->content,
+            'title'   => $request->title,
+            'content' => $request->content,
         ]);
 
-        if (isset($validated['label_ids'])) {
-            $note->labels()->sync($validated['label_ids']);
-        }
-
-        return redirect()->back()->with('success', 'Đã cập nhật ghi chú!');
+        $note->labels()->sync($request->input('labels', []));
+        return back()->with('success', 'Đã cập nhật ghi chú!');
     }
 
     public function destroy(Note $note): RedirectResponse
