@@ -120,22 +120,28 @@
             </div>
 
             
-            <div class="flex-1 overflow-y-auto pr-2">
-                <div class="flex items-center justify-between px-2 mb-3">
-                    <h3 class="text-[11px] uppercase tracking-[0.2em] text-slate-400 font-bold">Nhãn</h3>
-                    <button onclick="document.getElementById('addLabelModal').classList.remove('hidden')" class="text-slate-400 hover:text-primary">
-                        <span class="material-symbols-outlined text-[18px]">add</span>
+            <div class="border-t border-slate-100 dark:border-slate-800 pt-4 mt-4">
+                <h3 class="px-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3 flex justify-between items-center">
+                    Nhãn
+                    <button onclick="document.getElementById('addLabelModal').classList.remove('hidden')"
+                        class="hover:text-blue-500 transition-colors">
+                        <span class="material-symbols-outlined text-sm">add</span>
                     </button>
-                </div>
+                </h3>
+
                 <div class="space-y-1">
-                    <?php $__currentLoopData = $labels ?? []; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $label): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                    <?php $__currentLoopData = $labels; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $label): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                         <div class="group flex items-center justify-between px-3 py-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">
-                            <a href="<?php echo e(route('dashboard', ['label' => $label->id])); ?>" class="flex items-center gap-3 truncate flex-1">
-                                <span class="w-2.5 h-2.5 rounded-full" style="background-color: <?php echo e($label->color); ?>"></span>
-                                <span class="text-sm text-slate-700 dark:text-slate-200 truncate"><?php echo e($label->name); ?></span>
+                            <a href="<?php echo e(route('dashboard', ['label' => $label->id])); ?>" 
+                            class="flex items-center gap-3 truncate flex-1 <?php echo e(request('label') == $label->id ? 'text-primary font-bold' : 'text-slate-700 dark:text-slate-300'); ?>">
+                                <span class="w-2.5 h-2.5 rounded-full flex-shrink-0" style="background-color: <?php echo e($label->color); ?>"></span>
+                                <span class="text-sm truncate"><?php echo e($label->name); ?></span>
                             </a>
-                            <button onclick="openEditLabelModal(<?php echo e($label->id); ?>, '<?php echo e($label->name); ?>', '<?php echo e($label->color); ?>')" class="hidden group-hover:block text-slate-400 hover:text-primary">
-                                <span class="material-symbols-outlined text-[16px]">edit</span>
+                            
+                            <button type="button" 
+                                    onclick="event.preventDefault(); event.stopPropagation(); openEditLabelModal('<?php echo e($label->id); ?>', '<?php echo e(addslashes($label->name)); ?>', '<?php echo e($label->color); ?>')" 
+                                    class="hidden group-hover:flex items-center justify-center w-7 h-7 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-400 hover:text-primary transition-all">
+                                <span class="material-symbols-outlined text-[18px]">edit</span>
                             </button>
                         </div>
                     <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
@@ -144,8 +150,7 @@
         </aside>
 
         <main class="flex-1 overflow-y-auto p-5 md:p-8 bg-transparent">
-            <?php echo e($slot); ?>
-
+            <?php echo $__env->yieldContent('content'); ?>
         </main>
     </div>
 
@@ -173,7 +178,8 @@
         <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl w-full max-w-sm p-6 border border-slate-200 dark:border-slate-700">
             <h3 class="font-black text-lg mb-5 dark:text-white">Sửa nhãn</h3>
             <form id="editLabelForm" method="POST">
-                <?php echo csrf_field(); ?> <?php echo method_field('PUT'); ?>
+                <?php echo csrf_field(); ?> 
+                <?php echo method_field('PUT'); ?>
                 <input type="text" id="editLabelName" name="name" required class="w-full border border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-white rounded-2xl p-3 mb-4 text-sm outline-none focus:ring-2 focus:ring-primary">
                 <div class="flex items-center gap-3 mb-5">
                     <label class="text-sm dark:text-slate-300">Màu nhãn:</label>
@@ -189,7 +195,8 @@
                 </div>
             </form>
             <form id="deleteLabelForm" method="POST" class="hidden">
-                <?php echo csrf_field(); ?> <?php echo method_field('DELETE'); ?>
+                <?php echo csrf_field(); ?> 
+                <?php echo method_field('DELETE'); ?>
             </form>
         </div>
     </div>
@@ -198,8 +205,10 @@
         function openEditLabelModal(id, name, color) {
             document.getElementById('editLabelName').value = name;
             document.getElementById('editLabelColor').value = color;
+
             document.getElementById('editLabelForm').action = '/labels/' + id;
             document.getElementById('deleteLabelForm').action = '/labels/' + id;
+
             document.getElementById('editLabelModal').classList.remove('hidden');
         }
 

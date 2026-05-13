@@ -14,7 +14,6 @@ class LabelController extends Controller
             'color' => 'nullable|string|max:20'
         ]);
 
-        // Kiểm tra độc nhất, phân biệt hoa/thường (BINARY) cho user hiện tại
         $exists = Label::where('user_id', Auth::id())
                        ->whereRaw('BINARY name = ?', [$request->name])->exists();
 
@@ -36,7 +35,6 @@ class LabelController extends Controller
 
         $request->validate(['name' => 'required|string|max:255', 'color' => 'nullable|string|max:20']);
 
-        // Kiểm tra trùng tên với nhãn KHÁC
         $exists = Label::where('user_id', Auth::id())
                        ->where('id', '!=', $label->id)
                        ->whereRaw('BINARY name = ?', [$request->name])->exists();

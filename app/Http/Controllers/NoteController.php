@@ -13,18 +13,35 @@ use Illuminate\Http\RedirectResponse;
 
 class NoteController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $notes = Note::where('user_id', Auth::id())
-            ->with(['labels', 'images'])
-            ->orderByDesc('is_pinned')
-            ->orderByDesc('pinned_at')
-            ->orderByDesc('updated_at')
-            ->get();
+        $userId = Auth::id();
 
-        $labels = Label::where('user_id', Auth::id())
+        $labels = Label::where('user_id', $userId)
             ->withCount('notes')
             ->orderBy('name')
+            ->get();
+
+        $query = Note::where('user_id', $userId)
+            ->with(['labels', 'images']);
+
+        if ($request->filled('label')) {
+            $query->whereHas('labels', function($q) use ($request) {
+                $q->where('labels.id', $request->label);
+            });
+        }
+
+        if ($request->filled('search')) {
+            $searchTerm = $request->search;
+            $query->where(function($q) use ($searchTerm) {
+                $q->where('title', 'LIKE', "%{$searchTerm}%")
+                ->orWhere('content', 'LIKE', "%{$searchTerm}%");
+            });
+        }
+
+        $notes = $query->orderByDesc('is_pinned')
+            ->orderByDesc('pinned_at')
+            ->orderByDesc('updated_at')
             ->get();
 
         return view('dashboard', compact('notes', 'labels'));

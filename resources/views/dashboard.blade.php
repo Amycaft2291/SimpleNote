@@ -15,7 +15,8 @@
     $userUI = $getNoteUI($userBg);
 @endphp
 
-<x-app-layout>
+@extends('layouts.app')
+@section('content')
     <div id="notes-font-size">
         {{--xác thực tk = mail--}}
         @if(!auth()->user()->hasVerifiedEmail())
@@ -65,7 +66,7 @@
                     
                     {{--label--}}
                     <div class="border-t {{ $userUI->border }} pt-3">
-                        <p class="text-[10px] font-bold {{ $userUI->muted }} uppercase mb-2">Gán Nhãn</p>
+                        <p class="text-[10px] font-bold {{ $userUI->muted }} uppercase mb-2">Gán nhãn</p>
                         <div class="flex flex-wrap gap-2">
                             @isset($labels)
                                 @foreach($labels as $label)
@@ -235,7 +236,7 @@
 
                     {{-- tag/label--}}
                     <div class="border-t border-slate-100 dark:border-slate-700 pt-4">
-                        <p class="text-[11px] font-bold text-slate-400 uppercase mb-3 tracking-wider">Gán Nhãn</p>
+                        <p class="text-[11px] font-bold text-slate-400 uppercase mb-3 tracking-wider">Gán nhãn</p>
                         <div class="flex flex-wrap gap-2" id="editLabelsContainer">
                             @foreach($labels ?? [] as $label)
                                 <label class="flex items-center gap-1.5 ...">
@@ -312,4 +313,4 @@
         const CSRF_TOKEN = '{{ csrf_token() }}';
     </script>
     <script src="{{ asset('js/dashboard.js') }}"></script>
-</x-app-layout>
+@endsection

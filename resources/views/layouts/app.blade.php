@@ -93,7 +93,7 @@
         {{--sidebar--}}
         <aside class="w-72 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 hidden md:flex flex-col px-4 py-5 flex-shrink-0">
             
-            {{--gchu mói--}}
+            {{--gchu mới--}}
             <button onclick="openCreateForm()" class="w-full py-3 px-4 rounded-2xl bg-primary hover:bg-primaryDark transition-all text-white font-semibold text-sm flex items-center justify-center gap-2 shadow-lg mb-8">
                 <span class="material-symbols-outlined text-[20px]">add</span> Ghi chú mới
             </button>
@@ -119,22 +119,28 @@
             </div>
 
             {{--label--}}
-            <div class="flex-1 overflow-y-auto pr-2">
-                <div class="flex items-center justify-between px-2 mb-3">
-                    <h3 class="text-[11px] uppercase tracking-[0.2em] text-slate-400 font-bold">Nhãn</h3>
-                    <button onclick="document.getElementById('addLabelModal').classList.remove('hidden')" class="text-slate-400 hover:text-primary">
-                        <span class="material-symbols-outlined text-[18px]">add</span>
+            <div class="border-t border-slate-100 dark:border-slate-800 pt-4 mt-4">
+                <h3 class="px-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3 flex justify-between items-center">
+                    Nhãn
+                    <button onclick="document.getElementById('addLabelModal').classList.remove('hidden')"
+                        class="hover:text-blue-500 transition-colors">
+                        <span class="material-symbols-outlined text-sm">add</span>
                     </button>
-                </div>
+                </h3>
+
                 <div class="space-y-1">
-                    @foreach($labels ?? [] as $label)
+                    @foreach($labels as $label)
                         <div class="group flex items-center justify-between px-3 py-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">
-                            <a href="{{ route('dashboard', ['label' => $label->id]) }}" class="flex items-center gap-3 truncate flex-1">
-                                <span class="w-2.5 h-2.5 rounded-full" style="background-color: {{ $label->color }}"></span>
-                                <span class="text-sm text-slate-700 dark:text-slate-200 truncate">{{ $label->name }}</span>
+                            <a href="{{ route('dashboard', ['label' => $label->id]) }}" 
+                            class="flex items-center gap-3 truncate flex-1 {{ request('label') == $label->id ? 'text-primary font-bold' : 'text-slate-700 dark:text-slate-300' }}">
+                                <span class="w-2.5 h-2.5 rounded-full flex-shrink-0" style="background-color: {{ $label->color }}"></span>
+                                <span class="text-sm truncate">{{ $label->name }}</span>
                             </a>
-                            <button onclick="openEditLabelModal({{ $label->id }}, '{{ $label->name }}', '{{ $label->color }}')" class="hidden group-hover:block text-slate-400 hover:text-primary">
-                                <span class="material-symbols-outlined text-[16px]">edit</span>
+                            
+                            <button type="button" 
+                                    onclick="event.preventDefault(); event.stopPropagation(); openEditLabelModal('{{ $label->id }}', '{{ addslashes($label->name) }}', '{{ $label->color }}')" 
+                                    class="hidden group-hover:flex items-center justify-center w-7 h-7 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-400 hover:text-primary transition-all">
+                                <span class="material-symbols-outlined text-[18px]">edit</span>
                             </button>
                         </div>
                     @endforeach
@@ -143,7 +149,7 @@
         </aside>
 
         <main class="flex-1 overflow-y-auto p-5 md:p-8 bg-transparent">
-            {{ $slot }}
+            @yield('content')
         </main>
     </div>
 
@@ -171,7 +177,8 @@
         <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl w-full max-w-sm p-6 border border-slate-200 dark:border-slate-700">
             <h3 class="font-black text-lg mb-5 dark:text-white">Sửa nhãn</h3>
             <form id="editLabelForm" method="POST">
-                @csrf @method('PUT')
+                @csrf 
+                @method('PUT')
                 <input type="text" id="editLabelName" name="name" required class="w-full border border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-white rounded-2xl p-3 mb-4 text-sm outline-none focus:ring-2 focus:ring-primary">
                 <div class="flex items-center gap-3 mb-5">
                     <label class="text-sm dark:text-slate-300">Màu nhãn:</label>
@@ -187,7 +194,8 @@
                 </div>
             </form>
             <form id="deleteLabelForm" method="POST" class="hidden">
-                @csrf @method('DELETE')
+                @csrf 
+                @method('DELETE')
             </form>
         </div>
     </div>
@@ -196,8 +204,10 @@
         function openEditLabelModal(id, name, color) {
             document.getElementById('editLabelName').value = name;
             document.getElementById('editLabelColor').value = color;
+
             document.getElementById('editLabelForm').action = '/labels/' + id;
             document.getElementById('deleteLabelForm').action = '/labels/' + id;
+
             document.getElementById('editLabelModal').classList.remove('hidden');
         }
 
