@@ -1,9 +1,7 @@
 <?php
     $getNoteUI = function($color) {
         $color = $color ?? auth()->user()->note_color ?? '#ffffff';
-        
         $isSpecificDark = ($color === '#1e293b');
-
         return (object) [
             'bg' => $color,
             'title' => $isSpecificDark ? 'text-white' : 'text-slate-900', 
@@ -48,7 +46,7 @@
         
         <div class="max-w-2xl mx-auto mb-10">
             <div id="createBar" class="rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 transition-all hover:shadow-md" 
-                 style="background-color: <?php echo e($userUI->bg); ?> !important;">
+                style="background-color: <?php echo e($userUI->bg); ?> !important;">
                 
                 
                 <div id="createPlaceholder" class="flex items-center justify-between p-4 cursor-pointer <?php echo e($userUI->content); ?>" onclick="openCreateForm()">
@@ -57,20 +55,21 @@
                 </div>
 
                 
-                <div id="createForm" class="hidden p-4 space-y-3">
-                    <input id="newTitle" type="text" placeholder="Tiêu đề" 
-                           class="w-full font-bold border-none outline-none focus:ring-0 px-0 <?php echo e($userUI->title); ?>" 
-                           style="background-color: transparent !important;">
+                <form id="createForm" action="<?php echo e(route('notes.store')); ?>" method="POST" enctype="multipart/form-data" class="hidden p-4 space-y-3">
+                    <?php echo csrf_field(); ?>
+                    <input name="title" type="text" placeholder="Tiêu đề" 
+                        class="w-full font-bold border-none outline-none focus:ring-0 px-0 <?php echo e($userUI->title); ?>" 
+                        style="background-color: transparent !important;">
                     
-                    <textarea id="newContent" rows="3" placeholder="Nội dung ghi chú..." 
-                              class="w-full text-sm border-none outline-none resize-none focus:ring-0 px-0 <?php echo e($userUI->content); ?>" 
-                              style="background-color: transparent !important;"></textarea>
+                    <textarea name="content" rows="3" placeholder="Nội dung ghi chú..." 
+                            class="w-full text-sm border-none outline-none resize-none focus:ring-0 px-0 <?php echo e($userUI->content); ?>" 
+                            style="background-color: transparent !important;"></textarea>
                     
                     
                     <div>
                         <label class="text-[10px] font-bold <?php echo e($userUI->muted); ?> uppercase block mb-1">Ảnh đính kèm</label>
-                        <input type="file" id="newImages" multiple accept="image/*" 
-                               class="text-sm <?php echo e($userUI->muted); ?> file:mr-4 file:py-1 file:px-3 file:rounded-full file:border-0 file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                        <input type="file" name="images[]" multiple accept="image/*" 
+                            class="text-sm <?php echo e($userUI->muted); ?> file:mr-4 file:py-1 file:px-3 file:rounded-full file:border-0 file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
                     </div>
                     
                     
@@ -79,8 +78,8 @@
                         <div class="flex flex-wrap gap-2">
                             <?php if(isset($labels)): ?>
                                 <?php $__currentLoopData = $labels; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $label): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                                <label class="flex items-center gap-1.5 text-xs bg-black/5 dark:bg-white/5 <?php echo e($userUI->content); ?> px-2 py-1 rounded-lg cursor-pointer hover:bg-black/10">
-                                    <input type="checkbox" value="<?php echo e($label->id); ?>" class="new-label-cb rounded border-slate-300 text-blue-600 shadow-sm focus:ring-blue-500">
+                                <label class="flex items-center gap-1.5 text-xs bg-black/5 px-2 py-1 rounded-lg cursor-pointer hover:bg-black/10 <?php echo e($userUI->content); ?>">
+                                    <input type="checkbox" name="label_ids[]" value="<?php echo e($label->id); ?>" class="rounded border-slate-300 text-blue-600 shadow-sm focus:ring-blue-500">
                                     <span class="w-2 h-2 rounded-full flex-shrink-0" style="background-color: <?php echo e($label->color); ?>"></span>
                                     <?php echo e($label->name); ?>
 
@@ -90,12 +89,11 @@
                         </div>
                     </div>
 
-                    
                     <div class="flex justify-end gap-2 pt-2 border-t <?php echo e($userUI->border); ?>">
                         <button type="button" onclick="closeCreateForm()" class="px-4 py-1.5 text-sm rounded-lg hover:bg-black/5 <?php echo e($userUI->content); ?>">Đóng</button>
-                        <button type="button" onclick="saveNote()" class="px-4 py-1.5 text-sm font-semibold bg-blue-600 text-white rounded-lg hover:bg-blue-700">Lưu</button>
+                        <button type="submit" class="px-4 py-1.5 text-sm font-semibold bg-blue-600 text-white rounded-lg hover:bg-blue-700">Lưu</button>
                     </div>
-                </div>
+                </form>
             </div>
         </div>
 
@@ -215,6 +213,15 @@
                 </div>
             <?php endif; ?>
         </div>
+
+
+
+
+
+
+
+
+        
 
         
         <div id="editModal" class="hidden fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
