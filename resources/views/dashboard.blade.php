@@ -117,7 +117,7 @@
         {{--lưới gchu--}}
         <div id="notesContainer" class="masonry-grid">
             @forelse($notes as $note)
-                <div class="masonry-item group cursor-pointer note-card" 
+                <div class="masonry-item group cursor-pointer note-card rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden relative shadow-sm hover:shadow-md transition-all" 
                     data-id="{{ $note->id }}"
                     data-locked="{{ $note->is_locked ? 1 : 0 }}"
                     data-color="{{ $userUI->bg }}"
@@ -128,70 +128,68 @@
                     data-pinned="{{ $note->is_pinned ? 1 : 0 }}"
                     data-timestamp="{{ $note->updated_at->timestamp }}"
                     data-created-at="{{ $note->created_at->diffForHumans() }}"
-                    onclick="openEditModal(this)">
-                    
-                    <div class="note-card rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden relative shadow-sm hover:shadow-md transition-all cursor-pointer group" onclick="handleNoteClick(event, {{ $note->id }}, {{ $note->is_locked ? 'true' : 'false' }})" style="background-color: {{ $userUI->bg }} !important;">                       
-                        <div class="p-5">
-                            {{--header--}}
-                            <div class="flex justify-between items-start mb-2 gap-4">
-                                <div class="flex flex-col overflow-hidden">
-                                    <h2 class="note-title font-bold text-base {{ $userUI->title }} leading-snug break-words">
-                                        {{ $note->title ?: 'Không tiêu đề' }}
-                                    </h2>
-                                    {{--tgian--}}
-                                    <div class="flex items-center gap-1 text-[10px] {{ $userUI->muted }} mt-1 font-bold uppercase tracking-wider">
-                                        <span class="material-symbols-outlined text-[12px]">calendar_today</span>
-                                        {{ $note->updated_at->format('d/m/Y') }}
-                                    </div>
-                                </div>
-
-                                {{--nút ghim + khóa--}}
-                                <div class="flex gap-1 shrink-0">
-                                    {{--ghim --}}
-                                    <button type="button" 
-                                        onclick="togglePin(event, this, {{ $note->id }})"
-                                        class="p-1.5 rounded-lg transition-all {{ $note->is_pinned ? 'text-yellow-500 bg-yellow-50' : 'text-slate-400 hover:bg-black/5 opacity-0 group-hover:opacity-100' }}">
-                                        <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' {{ $note->is_pinned ? 1 : 0 }};">push_pin</span>
-                                    </button>
-
-                                    {{--khóa --}}
-                                    <button type="button" 
-                                        onclick="toggleLock(event, this, {{ $note->id }})"
-                                        class="p-1.5 rounded-lg transition-all {{ $note->is_locked ? 'text-blue-500 bg-blue-50' : 'text-slate-400 hover:bg-black/5 opacity-0 group-hover:opacity-100' }}">
-                                        <span class="material-symbols-outlined text-[20px]">
-                                            {{ $note->is_locked ? 'lock' : 'lock_open' }}
-                                        </span>
-                                    </button>
+                    onclick="handleNoteClick(event, {{ $note->id }}, {{ $note->is_locked ? 'true' : 'false' }})" 
+                    style="background-color: {{ $userUI->bg }} !important;">
+                    <div class="p-5">
+                        {{--header--}}
+                        <div class="flex justify-between items-start mb-2 gap-4">
+                            <div class="flex flex-col overflow-hidden">
+                                <h2 class="note-title font-bold text-base {{ $userUI->title }} leading-snug break-words">
+                                    {{ $note->title ?: 'Không tiêu đề' }}
+                                </h2>
+                                {{--tgian--}}
+                                <div class="flex items-center gap-1 text-[10px] {{ $userUI->muted }} mt-1 font-bold uppercase tracking-wider">
+                                    <span class="material-symbols-outlined text-[12px]">calendar_today</span>
+                                    {{ $note->updated_at->format('d/m/Y') }}
                                 </div>
                             </div>
 
-                            {{--nd--}}
-                            <div class="mt-3">
-                                @if($note->is_locked)
-                                    <div class="py-6 flex flex-col items-center justify-center text-slate-400 bg-black/5 rounded-lg">
-                                        <span class="material-symbols-outlined text-3xl mb-2">encrypted</span>
-                                        <p class="text-[10px] font-bold uppercase tracking-widest">Ghi chú đã bị khóa</p>
-                                    </div>
-                                @else
-                                    @if($note->content)
-                                        <p class="note-content line-clamp-5 text-sm {{ $userUI->content }} leading-relaxed break-words">
-                                            {{ $note->content }}
-                                        </p>
-                                    @endif
+                            {{--nút ghim + khóa--}}
+                            <div class="flex gap-1 shrink-0">
+                                {{--ghim --}}
+                                <button type="button" 
+                                    onclick="togglePin(event, this, {{ $note->id }})"
+                                    class="p-1.5 rounded-lg transition-all {{ $note->is_pinned ? 'text-yellow-500 bg-yellow-50' : 'text-slate-400 hover:bg-black/5 opacity-0 group-hover:opacity-100' }}">
+                                    <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' {{ $note->is_pinned ? 1 : 0 }};">push_pin</span>
+                                </button>
+
+                                {{--khóa --}}
+                                <button type="button" 
+                                    onclick="toggleLock(event, this, {{ $note->id }})"
+                                    class="p-1.5 rounded-lg transition-all {{ $note->is_locked ? 'text-blue-500 bg-blue-50' : 'text-slate-400 hover:bg-black/5 opacity-0 group-hover:opacity-100' }}">
+                                    <span class="material-symbols-outlined text-[20px]">
+                                        {{ $note->is_locked ? 'lock' : 'lock_open' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </div>
+
+                        {{--nd--}}
+                        <div class="mt-3">
+                            @if($note->is_locked)
+                                <div class="py-6 flex flex-col items-center justify-center text-slate-400 bg-black/5 rounded-lg">
+                                    <span class="material-symbols-outlined text-3xl mb-2">encrypted</span>
+                                    <p class="text-[10px] font-bold uppercase tracking-widest">Ghi chú đã bị khóa</p>
+                                </div>
+                            @else
+                                @if($note->content)
+                                    <p class="note-content line-clamp-5 text-sm {{ $userUI->content }} leading-relaxed break-words">
+                                        {{ $note->content }}
+                                    </p>
                                 @endif
-                            </div>
-
-                            {{--tag--}}
-                            @if($note->labels->count() > 0)
-                                <div class="flex flex-wrap gap-1 mt-4">
-                                    @foreach($note->labels as $lbl)
-                                        <span class="text-[9px] font-bold px-2 py-0.5 rounded-full text-white shadow-sm" style="background-color: {{ $lbl->color }}">
-                                            {{ $lbl->name }}
-                                        </span>
-                                    @endforeach
-                                </div>
                             @endif
                         </div>
+
+                        {{--tag--}}
+                        @if($note->labels->count() > 0)
+                            <div class="flex flex-wrap gap-1 mt-4">
+                                @foreach($note->labels as $lbl)
+                                    <span class="text-[9px] font-bold px-2 py-0.5 rounded-full text-white shadow-sm" style="background-color: {{ $lbl->color }}">
+                                        {{ $lbl->name }}
+                                    </span>
+                                @endforeach
+                            </div>
+                        @endif
                     </div>
                 </div>
             @empty
@@ -591,7 +589,7 @@
                 await openUnlockModal(noteId);
             } else {
                 if (typeof openEditModal === 'function') {
-                    openEditModal(noteId);
+                    openEditModal(event.currentTarget);
                 }
             }
         }

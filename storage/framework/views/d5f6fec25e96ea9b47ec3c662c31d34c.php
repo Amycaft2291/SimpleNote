@@ -127,7 +127,7 @@
         
         <div id="notesContainer" class="masonry-grid">
             <?php $__empty_1 = true; $__currentLoopData = $notes; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $note): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
-                <div class="masonry-item group cursor-pointer note-card" 
+                <div class="masonry-item group cursor-pointer note-card rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden relative shadow-sm hover:shadow-md transition-all" 
                     data-id="<?php echo e($note->id); ?>"
                     data-locked="<?php echo e($note->is_locked ? 1 : 0); ?>"
                     data-color="<?php echo e($userUI->bg); ?>"
@@ -138,75 +138,73 @@
                     data-pinned="<?php echo e($note->is_pinned ? 1 : 0); ?>"
                     data-timestamp="<?php echo e($note->updated_at->timestamp); ?>"
                     data-created-at="<?php echo e($note->created_at->diffForHumans()); ?>"
-                    onclick="openEditModal(this)">
-                    
-                    <div class="note-card rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden relative shadow-sm hover:shadow-md transition-all cursor-pointer group" onclick="handleNoteClick(event, <?php echo e($note->id); ?>, <?php echo e($note->is_locked ? 'true' : 'false'); ?>)" style="background-color: <?php echo e($userUI->bg); ?> !important;">                       
-                        <div class="p-5">
-                            
-                            <div class="flex justify-between items-start mb-2 gap-4">
-                                <div class="flex flex-col overflow-hidden">
-                                    <h2 class="note-title font-bold text-base <?php echo e($userUI->title); ?> leading-snug break-words">
-                                        <?php echo e($note->title ?: 'Không tiêu đề'); ?>
+                    onclick="handleNoteClick(event, <?php echo e($note->id); ?>, <?php echo e($note->is_locked ? 'true' : 'false'); ?>)" 
+                    style="background-color: <?php echo e($userUI->bg); ?> !important;">
+                    <div class="p-5">
+                        
+                        <div class="flex justify-between items-start mb-2 gap-4">
+                            <div class="flex flex-col overflow-hidden">
+                                <h2 class="note-title font-bold text-base <?php echo e($userUI->title); ?> leading-snug break-words">
+                                    <?php echo e($note->title ?: 'Không tiêu đề'); ?>
 
-                                    </h2>
-                                    
-                                    <div class="flex items-center gap-1 text-[10px] <?php echo e($userUI->muted); ?> mt-1 font-bold uppercase tracking-wider">
-                                        <span class="material-symbols-outlined text-[12px]">calendar_today</span>
-                                        <?php echo e($note->updated_at->format('d/m/Y')); ?>
+                                </h2>
+                                
+                                <div class="flex items-center gap-1 text-[10px] <?php echo e($userUI->muted); ?> mt-1 font-bold uppercase tracking-wider">
+                                    <span class="material-symbols-outlined text-[12px]">calendar_today</span>
+                                    <?php echo e($note->updated_at->format('d/m/Y')); ?>
 
-                                    </div>
                                 </div>
+                            </div>
+
+                            
+                            <div class="flex gap-1 shrink-0">
+                                
+                                <button type="button" 
+                                    onclick="togglePin(event, this, <?php echo e($note->id); ?>)"
+                                    class="p-1.5 rounded-lg transition-all <?php echo e($note->is_pinned ? 'text-yellow-500 bg-yellow-50' : 'text-slate-400 hover:bg-black/5 opacity-0 group-hover:opacity-100'); ?>">
+                                    <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' <?php echo e($note->is_pinned ? 1 : 0); ?>;">push_pin</span>
+                                </button>
 
                                 
-                                <div class="flex gap-1 shrink-0">
-                                    
-                                    <button type="button" 
-                                        onclick="togglePin(event, this, <?php echo e($note->id); ?>)"
-                                        class="p-1.5 rounded-lg transition-all <?php echo e($note->is_pinned ? 'text-yellow-500 bg-yellow-50' : 'text-slate-400 hover:bg-black/5 opacity-0 group-hover:opacity-100'); ?>">
-                                        <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' <?php echo e($note->is_pinned ? 1 : 0); ?>;">push_pin</span>
-                                    </button>
+                                <button type="button" 
+                                    onclick="toggleLock(event, this, <?php echo e($note->id); ?>)"
+                                    class="p-1.5 rounded-lg transition-all <?php echo e($note->is_locked ? 'text-blue-500 bg-blue-50' : 'text-slate-400 hover:bg-black/5 opacity-0 group-hover:opacity-100'); ?>">
+                                    <span class="material-symbols-outlined text-[20px]">
+                                        <?php echo e($note->is_locked ? 'lock' : 'lock_open'); ?>
 
-                                    
-                                    <button type="button" 
-                                        onclick="toggleLock(event, this, <?php echo e($note->id); ?>)"
-                                        class="p-1.5 rounded-lg transition-all <?php echo e($note->is_locked ? 'text-blue-500 bg-blue-50' : 'text-slate-400 hover:bg-black/5 opacity-0 group-hover:opacity-100'); ?>">
-                                        <span class="material-symbols-outlined text-[20px]">
-                                            <?php echo e($note->is_locked ? 'lock' : 'lock_open'); ?>
-
-                                        </span>
-                                    </button>
-                                </div>
+                                    </span>
+                                </button>
                             </div>
+                        </div>
 
-                            
-                            <div class="mt-3">
-                                <?php if($note->is_locked): ?>
-                                    <div class="py-6 flex flex-col items-center justify-center text-slate-400 bg-black/5 rounded-lg">
-                                        <span class="material-symbols-outlined text-3xl mb-2">encrypted</span>
-                                        <p class="text-[10px] font-bold uppercase tracking-widest">Ghi chú đã bị khóa</p>
-                                    </div>
-                                <?php else: ?>
-                                    <?php if($note->content): ?>
-                                        <p class="note-content line-clamp-5 text-sm <?php echo e($userUI->content); ?> leading-relaxed break-words">
-                                            <?php echo e($note->content); ?>
+                        
+                        <div class="mt-3">
+                            <?php if($note->is_locked): ?>
+                                <div class="py-6 flex flex-col items-center justify-center text-slate-400 bg-black/5 rounded-lg">
+                                    <span class="material-symbols-outlined text-3xl mb-2">encrypted</span>
+                                    <p class="text-[10px] font-bold uppercase tracking-widest">Ghi chú đã bị khóa</p>
+                                </div>
+                            <?php else: ?>
+                                <?php if($note->content): ?>
+                                    <p class="note-content line-clamp-5 text-sm <?php echo e($userUI->content); ?> leading-relaxed break-words">
+                                        <?php echo e($note->content); ?>
 
-                                        </p>
-                                    <?php endif; ?>
+                                    </p>
                                 <?php endif; ?>
-                            </div>
-
-                            
-                            <?php if($note->labels->count() > 0): ?>
-                                <div class="flex flex-wrap gap-1 mt-4">
-                                    <?php $__currentLoopData = $note->labels; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $lbl): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                                        <span class="text-[9px] font-bold px-2 py-0.5 rounded-full text-white shadow-sm" style="background-color: <?php echo e($lbl->color); ?>">
-                                            <?php echo e($lbl->name); ?>
-
-                                        </span>
-                                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-                                </div>
                             <?php endif; ?>
                         </div>
+
+                        
+                        <?php if($note->labels->count() > 0): ?>
+                            <div class="flex flex-wrap gap-1 mt-4">
+                                <?php $__currentLoopData = $note->labels; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $lbl): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                    <span class="text-[9px] font-bold px-2 py-0.5 rounded-full text-white shadow-sm" style="background-color: <?php echo e($lbl->color); ?>">
+                                        <?php echo e($lbl->name); ?>
+
+                                    </span>
+                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                            </div>
+                        <?php endif; ?>
                     </div>
                 </div>
             <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
@@ -607,7 +605,7 @@
                 await openUnlockModal(noteId);
             } else {
                 if (typeof openEditModal === 'function') {
-                    openEditModal(noteId);
+                    openEditModal(event.currentTarget);
                 }
             }
         }
