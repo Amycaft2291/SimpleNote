@@ -51,7 +51,7 @@
 
 <body class="bg-slate-100 dark:bg-slate-950 text-slate-800 dark:text-slate-200 antialiased font-sans">
 
-    {{--top nabar--}}
+    {{--top nav--}}
     <header class="fixed top-0 w-full h-16 z-50 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
         <div class="h-full px-5 flex items-center justify-between">
             <div class="flex items-center gap-3">
@@ -61,7 +61,7 @@
                 <h1 class="text-lg font-black tracking-tight text-slate-800 dark:text-white">SimpleNote</h1>
             </div>
 
-            {{--tìm --}}
+            {{--tìm--}}
             <form action="{{ route('dashboard') }}" method="GET" class="hidden md:flex flex-1 max-w-2xl mx-10 relative">
                 <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">search</span>
                 <input name="search" type="text" value="{{ request('search') }}" placeholder="Tìm kiếm ghi chú..." 
@@ -92,29 +92,43 @@
     <div class="flex pt-16 h-screen overflow-hidden">
         {{--sidebar--}}
         <aside class="w-72 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 hidden md:flex flex-col px-4 py-5 flex-shrink-0">
-            <button onclick="openCreateForm()" class="w-full py-3 px-4 rounded-2xl bg-primary hover:bg-primaryDark text-white font-semibold text-sm flex items-center justify-center gap-2 shadow-lg mb-8">
+            
+            {{--gchu mói--}}
+            <button onclick="openCreateForm()" class="w-full py-3 px-4 rounded-2xl bg-primary hover:bg-primaryDark transition-all text-white font-semibold text-sm flex items-center justify-center gap-2 shadow-lg mb-8">
                 <span class="material-symbols-outlined text-[20px]">add</span> Ghi chú mới
             </button>
 
-            <div class="space-y-1">
+            {{--main menu--}}
+            <div class="mb-8">
                 <h3 class="text-[11px] uppercase tracking-[0.2em] text-slate-400 font-bold px-2 mb-3">Chính</h3>
-                <a href="{{ route('dashboard') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800">
-                    <span class="material-symbols-outlined text-[20px]">grid_view</span> <span class="font-semibold text-sm">Tất cả ghi chú</span>
-                </a>
+                <div class="space-y-1">
+                    <a href="{{ route('dashboard') }}" 
+                       class="group flex items-center justify-between px-3 py-2.5 rounded-xl {{ !request('label') ? 'bg-primary/10 text-primary' : 'text-slate-700 dark:text-slate-300' }} hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">
+                        <div class="flex items-center gap-3">
+                            <span class="material-symbols-outlined text-[20px]">grid_view</span>
+                            <span class="font-semibold text-sm">Tất cả ghi chú</span>
+                        </div>
+                    </a>
+                    <button class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">
+                        <div class="flex items-center gap-3">
+                            <span class="material-symbols-outlined text-[20px]">group</span>
+                            <span class="font-medium text-sm">Được chia sẻ</span>
+                        </div>
+                    </button>
+                </div>
             </div>
 
-            <div class="mt-8 border-t border-slate-200 dark:border-slate-800 pt-6">
+            {{--label--}}
+            <div class="flex-1 overflow-y-auto pr-2">
                 <div class="flex items-center justify-between px-2 mb-3">
                     <h3 class="text-[11px] uppercase tracking-[0.2em] text-slate-400 font-bold">Nhãn</h3>
-                    <button onclick="document.getElementById('addLabelModal').classList.remove('hidden')" class="text-slate-500 hover:text-primary">
+                    <button onclick="document.getElementById('addLabelModal').classList.remove('hidden')" class="text-slate-400 hover:text-primary">
                         <span class="material-symbols-outlined text-[18px]">add</span>
                     </button>
                 </div>
-
-                {{--tag bên sidebar--}}
                 <div class="space-y-1">
                     @foreach($labels ?? [] as $label)
-                        <div class="group flex items-center justify-between px-3 py-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800">
+                        <div class="group flex items-center justify-between px-3 py-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">
                             <a href="{{ route('dashboard', ['label' => $label->id]) }}" class="flex items-center gap-3 truncate flex-1">
                                 <span class="w-2.5 h-2.5 rounded-full" style="background-color: {{ $label->color }}"></span>
                                 <span class="text-sm text-slate-700 dark:text-slate-200 truncate">{{ $label->name }}</span>
@@ -133,49 +147,50 @@
         </main>
     </div>
 
-    {{--các modal--}}
-        <div id="addLabelModal" class="hidden fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
-            <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl w-full max-w-sm p-6 border border-slate-200 dark:border-slate-700">
-                <h3 class="font-black text-lg mb-5 dark:text-white">Tạo nhãn mới</h3>
-                <form action="{{ route('labels.store') }}" method="POST">
-                    @csrf
-                    <input type="text" name="name" required class="w-full border border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-white rounded-2xl p-3 mb-4 text-sm outline-none focus:ring-2 focus:ring-primary" placeholder="Tên nhãn...">
-                    <div class="flex items-center gap-3 mb-5">
-                        <label class="text-sm dark:text-slate-300">Màu nhãn:</label>
-                        <input type="color" name="color" value="#7494ec" class="w-10 h-10 rounded-xl cursor-pointer border-0 p-0">
-                    </div>
-                    <div class="flex justify-end gap-2">
-                        <button type="button" onclick="document.getElementById('addLabelModal').classList.add('hidden')" class="px-4 py-2 text-sm text-slate-500 hover:bg-slate-100 rounded-xl">Hủy</button>
-                        <button type="submit" class="px-5 py-2 text-sm bg-primary text-white rounded-xl shadow-lg">Thêm</button>
-                    </div>
-                </form>
-            </div>
+    {{--thêm nhãn--}}
+    <div id="addLabelModal" class="hidden fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl w-full max-w-sm p-6 border border-slate-200 dark:border-slate-700">
+            <h3 class="font-black text-lg mb-5 dark:text-white">Tạo nhãn mới</h3>
+            <form action="{{ route('labels.store') }}" method="POST">
+                @csrf
+                <input type="text" name="name" required class="w-full border border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-white rounded-2xl p-3 mb-4 text-sm outline-none focus:ring-2 focus:ring-primary" placeholder="Tên nhãn...">
+                <div class="flex items-center gap-3 mb-5">
+                    <label class="text-sm dark:text-slate-300">Màu nhãn:</label>
+                    <input type="color" name="color" value="#7494ec" class="w-12 h-12 rounded-xl cursor-pointer border-0 p-0 bg-transparent overflow-hidden [&::-webkit-color-swatch-wrapper]:p-0 [&::-webkit-color-swatch]:border-none [&::-webkit-color-swatch]:rounded-xl">
+                </div>
+                <div class="flex justify-end gap-2">
+                    <button type="button" onclick="document.getElementById('addLabelModal').classList.add('hidden')" class="px-4 py-2 text-sm text-slate-500 hover:bg-slate-100 rounded-xl">Hủy</button>
+                    <button type="submit" class="px-5 py-2 text-sm bg-primary text-white rounded-xl shadow-lg">Thêm</button>
+                </div>
+            </form>
         </div>
+    </div>
 
-        <div id="editLabelModal" class="hidden fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
-            <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl w-full max-w-sm p-6 border border-slate-200 dark:border-slate-700">
-                <h3 class="font-black text-lg mb-5 dark:text-white">Sửa nhãn</h3>
-                <form id="editLabelForm" method="POST">
-                    @csrf
-                    @method('PUT')
-                    <input type="text" id="editLabelName" name="name" required class="w-full border border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-white rounded-2xl p-3 mb-4 text-sm outline-none focus:ring-2 focus:ring-primary">
-                    <div class="flex items-center gap-3 mb-5">
-                        <label class="text-sm dark:text-slate-300">Màu nhãn:</label>
-                        <input type="color" id="editLabelColor" name="color" class="w-10 h-10 rounded-xl cursor-pointer border-0 p-0">
+    {{--sửa nhãn--}}
+    <div id="editLabelModal" class="hidden fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl w-full max-w-sm p-6 border border-slate-200 dark:border-slate-700">
+            <h3 class="font-black text-lg mb-5 dark:text-white">Sửa nhãn</h3>
+            <form id="editLabelForm" method="POST">
+                @csrf @method('PUT')
+                <input type="text" id="editLabelName" name="name" required class="w-full border border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-white rounded-2xl p-3 mb-4 text-sm outline-none focus:ring-2 focus:ring-primary">
+                <div class="flex items-center gap-3 mb-5">
+                    <label class="text-sm dark:text-slate-300">Màu nhãn:</label>
+                    {{-- Sửa class input color ở đây --}}
+                    <input type="color" id="editLabelColor" name="color" class="w-12 h-12 rounded-xl cursor-pointer border-0 p-0 bg-transparent overflow-hidden [&::-webkit-color-swatch-wrapper]:p-0 [&::-webkit-color-swatch]:border-none [&::-webkit-color-swatch]:rounded-xl">
+                </div>
+                <div class="flex justify-between items-center">
+                    <button type="button" onclick="deleteLabel()" class="text-sm text-red-500 hover:text-red-700 font-medium">Xóa nhãn</button>
+                    <div class="flex gap-2">
+                        <button type="button" onclick="document.getElementById('editLabelModal').classList.add('hidden')" class="px-4 py-2 text-sm text-slate-500 hover:bg-slate-100 rounded-xl">Hủy</button>
+                        <button type="submit" class="px-5 py-2 text-sm bg-primary text-white rounded-xl shadow-lg">Lưu</button>
                     </div>
-                    <div class="flex justify-between items-center">
-                        <button type="button" onclick="deleteLabel()" class="text-sm text-red-500 hover:text-red-700 font-medium">Xóa nhãn</button>
-                        <div class="flex gap-2">
-                            <button type="button" onclick="document.getElementById('editLabelModal').classList.add('hidden')" class="px-4 py-2 text-sm text-slate-500 hover:bg-slate-100 rounded-xl">Hủy</button>
-                            <button type="submit" class="px-5 py-2 text-sm bg-primary text-white rounded-xl shadow-lg">Lưu</button>
-                        </div>
-                    </div>
-                </form>
-                <form id="deleteLabelForm" method="POST" class="hidden">
-                    @csrf @method('DELETE')
-                </form>
-            </div>
+                </div>
+            </form>
+            <form id="deleteLabelForm" method="POST" class="hidden">
+                @csrf @method('DELETE')
+            </form>
         </div>
+    </div>
 
     <script>
         function openEditLabelModal(id, name, color) {
@@ -184,6 +199,12 @@
             document.getElementById('editLabelForm').action = '/labels/' + id;
             document.getElementById('deleteLabelForm').action = '/labels/' + id;
             document.getElementById('editLabelModal').classList.remove('hidden');
+        }
+
+        function deleteLabel() {
+            if(confirm('Xóa nhãn này sẽ không xóa các ghi chú thuộc nhãn đó. Bạn chắc chắn chứ?')) {
+                document.getElementById('deleteLabelForm').submit();
+            }
         }
 
         document.addEventListener('click', (e) => {
