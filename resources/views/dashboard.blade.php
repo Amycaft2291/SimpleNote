@@ -198,7 +198,7 @@
                 </div>
             @empty
                 <div class="col-span-full text-center py-20 text-slate-400">
-                    <span class="material-symbols-outlined text-6xl mb-4 block">note_stack</span>
+                    <span class="material-symbols-outlined center-align text-6xl mb-4 block">note_stack</span>
                     <p class="text-lg font-medium">Chưa có ghi chú nào</p>
                     <p class="text-sm mt-1">Bấm "Tạo ghi chú mới" để bắt đầu!</p>
                 </div>
