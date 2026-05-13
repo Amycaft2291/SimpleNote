@@ -64,8 +64,10 @@ class NoteController extends Controller
             'user_id' => Auth::id(),
         ]);
 
-        if (!empty($validated['label_ids'])) {
-            $ids = Label::where('user_id', Auth::id())->whereIn('id', $validated['label_ids'])->pluck('id');
+        if (!empty($validated['labels'])) {
+            $ids = Label::where('user_id', Auth::id())
+                        ->whereIn('id', $validated['labels'])
+                        ->pluck('id');
             $note->labels()->sync($ids);
         }
 
@@ -91,11 +93,17 @@ class NoteController extends Controller
         ]);
 
         $note->update([
-            'title'   => $request->title,
+            'title'   => $request->title ?? '(Không có tiêu đề)',
             'content' => $request->content,
         ]);
 
-        $note->labels()->sync($request->input('labels', []));
+        $labelIds = [];
+        if ($request->has('labels')) {
+            $labelIds = Label::where('user_id', Auth::id())
+                             ->whereIn('id', $request->input('labels'))
+                             ->pluck('id');
+        }
+        $note->labels()->sync($labelIds);        
         return back()->with('success', 'Đã cập nhật ghi chú!');
     }
 

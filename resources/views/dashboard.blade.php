@@ -71,7 +71,7 @@
                             @isset($labels)
                                 @foreach($labels as $label)
                                 <label class="flex items-center gap-1.5 text-xs bg-black/5 px-2 py-1 rounded-lg cursor-pointer hover:bg-black/10 {{ $userUI->content }}">
-                                    <input type="checkbox" name="label_ids[]" value="{{ $label->id }}" class="rounded border-slate-300 text-blue-600 shadow-sm focus:ring-blue-500">
+                                    <input type="checkbox" name="labels[]" value="{{ $label->id }}" class="rounded border-slate-300 text-blue-600 shadow-sm focus:ring-blue-500">
                                     <span class="w-2 h-2 rounded-full flex-shrink-0" style="background-color: {{ $label->color }}"></span>
                                     {{ $label->name }}
                                 </label>
@@ -240,7 +240,7 @@
                         <div class="flex flex-wrap gap-2" id="editLabelsContainer">
                             @foreach($labels ?? [] as $label)
                                 <label class="flex items-center gap-1.5 ...">
-                                    <input type="checkbox" name="label_ids[]" value="{{ $label->id }}" class="edit-label-cb ...">
+                                    <input type="checkbox" name="labels[]" value="{{ $label->id }}" class="edit-label-cb ...">
                                     <span class="w-2.5 h-2.5 rounded-full" style="background-color: {{ $label->color }}"></span>
                                     {{ $label->name }}
                                 </label>
