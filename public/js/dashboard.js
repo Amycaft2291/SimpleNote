@@ -33,6 +33,7 @@ function openEditModal(card) {
     const title = card.dataset.title;
     const content = card.dataset.content;
     const labelIds = card.dataset.labels ? card.dataset.labels.split(',') : [];
+    const imagesData = JSON.parse(card.dataset.images || '[]'); // Lấy mảng ảnh
 
     document.getElementById('editNoteId').value = id;
     document.getElementById('editTitle').value = title;
@@ -47,7 +48,39 @@ function openEditModal(card) {
         cb.checked = labelIds.includes(cb.value);
     });
 
+    const imgContainer = document.getElementById('editImagesContainer');
+    const newPreviewContainer = document.getElementById('newImagesPreview');
+
+    imgContainer.innerHTML = '';
+    newPreviewContainer.innerHTML = '';
+
+    imagesData.forEach(img => {
+        const div = document.createElement('div');
+        div.className = 'relative aspect-square rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700 group/img';
+        div.innerHTML = `
+            <img src="${img.path}" class="w-full h-full object-cover">
+            <div class="absolute inset-0 bg-black/40 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center">
+                <button type="button" onclick="submitDeleteImage(${img.id})" class="p-1.5 bg-red-500 text-white rounded-full shadow-lg">
+                    <span class="material-symbols-outlined text-sm">delete</span>
+                </button>
+            </div>
+        `;
+        imgContainer.appendChild(div);
+    });
+
     modal.classList.remove('hidden');
+}
+
+function submitDeleteImage(imageId) {
+    if (confirm('Bạn có chắc chắn muốn xóa ảnh này không?')) {
+        const form = document.getElementById('deleteImageForm');
+        if (form) {
+            form.action = '/note-images/' + imageId;
+            form.submit();
+        } else {
+            console.error("Không tìm thấy ảnh!");
+        }
+    }
 }
 
 function closeEditModal() {
@@ -112,6 +145,7 @@ function toggleSortOrder() {
 
 function sortNotes() {
     const container = document.getElementById('notesContainer');
+    if (!container) return;
     const cards = Array.from(container.getElementsByClassName('note-card'));
 
     cards.sort((a, b) => {

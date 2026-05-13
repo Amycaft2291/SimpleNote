@@ -17,6 +17,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/notes', [NoteController::class, 'store'])->name('notes.store');
     Route::put('/notes/{note}', [NoteController::class, 'update'])->name('notes.update');
     Route::delete('/notes/{note}', [NoteController::class, 'destroy'])->name('notes.destroy');
+    Route::delete('/note-images/{image}', [NoteController::class, 'deleteImage'])->name('notes.delete-image');
 
     Route::post('/notes/{note}/toggle-pin', [NoteController::class, 'togglePin'])->name('notes.toggle-pin');
     Route::post('/notes/{note}/toggle-lock', [NoteController::class, 'toggleLock'])->name('notes.toggle-lock');

@@ -107,15 +107,32 @@ class NoteController extends Controller
         return back()->with('success', 'Đã cập nhật ghi chú!');
     }
 
+    public function deleteImage(\App\Models\NoteImage $image)
+    {
+        if ($image->note->user_id !== auth()->id()) {
+            abort(403);
+        }
+
+        if (\Illuminate\Support\Facades\Storage::disk('public')->exists($image->image_path)) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($image->image_path);
+        }
+
+        $image->delete();
+        return back()->with('success', 'Đã xóa ảnh thành công!');
+    }
+
     public function destroy(Note $note): RedirectResponse
     {
         if ($note->user_id !== Auth::id()) abort(403);
-        
-        foreach ($note->images as $img) {
-            Storage::disk('public')->delete($img->image_path);
+
+        $imagePaths = $note->images->pluck('image_path')->toArray();
+
+        if (!empty($imagePaths)) {
+            Storage::disk('public')->delete($imagePaths);
         }
+
         $note->delete();
-        
+
         return redirect()->back()->with('success', 'Đã xóa ghi chú!');
     }
 

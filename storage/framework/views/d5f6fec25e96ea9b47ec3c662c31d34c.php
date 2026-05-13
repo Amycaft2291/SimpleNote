@@ -128,7 +128,8 @@
                     data-locked="<?php echo e($note->is_locked ? 1 : 0); ?>"
                     data-color="<?php echo e($userUI->bg); ?>"
                     data-title="<?php echo e(e($displayTitle)); ?>"
-                    data-content="<?php echo e(e($displayContent)); ?>" 
+                    data-content="<?php echo e(e($displayContent)); ?>"
+                    data-images='<?php echo json_encode($note->images->map(fn($img) => ["id" => $img->id, "path" => asset("storage/" . $img->image_path)]), 512) ?>' 
                     data-labels="<?php echo e($note->labels->pluck('id')->join(',')); ?>"
                     data-pinned="<?php echo e($note->is_pinned ? 1 : 0); ?>"
                     data-timestamp="<?php echo e($note->updated_at->timestamp); ?>"
@@ -189,6 +190,24 @@
                                 <?php endif; ?>
                             <?php endif; ?>
                         </div>
+
+                        
+                        <?php if(!($note->is_locked && !$isUnlocked) && $note->images->count() > 0): ?>
+                            <div class="grid grid-cols-<?php echo e(min($note->images->count(), 2)); ?> gap-1 mb-4 rounded-lg overflow-hidden border border-slate-100 dark:border-slate-700">
+                                <?php $__currentLoopData = $note->images->take(4); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $image): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                    <div class="relative aspect-video">
+                                        <img src="<?php echo e(asset('storage/' . $image->image_path)); ?>" 
+                                            class="w-full h-full object-cover">
+                                        <?php if($loop->iteration == 4 && $note->images->count() > 4): ?>
+                                            <div class="absolute inset-0 bg-black/40 flex items-center justify-center text-white text-xs font-bold">
+                                                +<?php echo e($note->images->count() - 3); ?>
+
+                                            </div>
+                                        <?php endif; ?>
+                                    </div>
+                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                            </div>
+                        <?php endif; ?>
 
                         
                         <?php if($note->labels->count() > 0): ?>
@@ -271,6 +290,11 @@
         </div>
 
         <form id="deleteForm" method="POST" class="hidden">
+            <?php echo csrf_field(); ?>
+            <?php echo method_field('DELETE'); ?>
+        </form>
+
+        <form id="deleteImageForm" method="POST" style="display:none;">
             <?php echo csrf_field(); ?>
             <?php echo method_field('DELETE'); ?>
         </form>
