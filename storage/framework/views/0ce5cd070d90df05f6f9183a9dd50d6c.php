@@ -131,12 +131,24 @@
 
                 <div class="space-y-1">
                     <?php $__currentLoopData = $labels; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $label): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                        <div class="group flex items-center justify-between px-3 py-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">
-                            <a href="<?php echo e(route('dashboard', ['label' => $label->id])); ?>" 
-                            class="flex items-center gap-3 truncate flex-1 <?php echo e(request('label') == $label->id ? 'text-primary font-bold' : 'text-slate-700 dark:text-slate-300'); ?>">
-                                <span class="w-2.5 h-2.5 rounded-full flex-shrink-0" style="background-color: <?php echo e($label->color); ?>"></span>
-                                <span class="text-sm truncate"><?php echo e($label->name); ?></span>
+                        <div class="group flex items-center justify-between px-3 py-2 rounded-xl <?php echo e(request('label') == $label->id ? 'bg-primary/10' : ''); ?> hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">
+                            
+                            
+                            <a href="<?php echo e(request('label') == $label->id ? route('dashboard') : route('dashboard', ['label' => $label->id])); ?>" 
+                                class="flex items-center gap-3 truncate flex-1 <?php echo e(request('label') == $label->id ? 'text-primary font-bold' : 'text-slate-700 dark:text-slate-300'); ?>">
+                                    
+                                    
+                                    <span class="w-2.5 h-2.5 rounded-full flex-shrink-0" style="background-color: <?php echo e($label->color); ?>"></span>
+                                    
+                                    
+                                    <span class="text-sm truncate"><?php echo e($label->name); ?></span>
+
+                                    
+                                    <?php if(request('label') == $label->id): ?>
+                                        <span class="material-symbols-outlined text-[16px] ml-auto opacity-70">close</span>
+                                    <?php endif; ?>
                             </a>
+                            
                             
                             <button type="button" 
                                     onclick="event.preventDefault(); event.stopPropagation(); openEditLabelModal('<?php echo e($label->id); ?>', '<?php echo e(addslashes($label->name)); ?>', '<?php echo e($label->color); ?>')" 

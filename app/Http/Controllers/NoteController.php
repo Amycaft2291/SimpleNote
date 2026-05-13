@@ -34,8 +34,8 @@ class NoteController extends Controller
         if ($request->filled('search')) {
             $searchTerm = $request->search;
             $query->where(function($q) use ($searchTerm) {
-                $q->where('title', 'LIKE', "%{$searchTerm}%")
-                ->orWhere('content', 'LIKE', "%{$searchTerm}%");
+                $q->where('title', 'like', "%{$searchTerm}%")
+                ->orWhere('content', 'like', "%{$searchTerm}%");
             });
         }
 
