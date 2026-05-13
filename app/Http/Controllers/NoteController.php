@@ -5,10 +5,11 @@ namespace App\Http\Controllers;
 use App\Models\Label;
 use App\Models\Note;
 use App\Models\NoteImage;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Http\RedirectResponse;
 
 class NoteController extends Controller
 {
@@ -29,10 +30,10 @@ class NoteController extends Controller
         return view('dashboard', compact('notes', 'labels'));
     }
 
-    public function store(Request $request): JsonResponse
+    public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'title'       => 'required|string|max:255',
+            'title'       => 'nullable|string|max:255',
             'content'     => 'nullable|string',
             'label_ids'   => 'nullable|array',
             'label_ids.*' => 'integer|exists:labels,id',
@@ -41,7 +42,7 @@ class NoteController extends Controller
         ]);
 
         $note = Note::create([
-            'title'   => $validated['title'],
+            'title'   => $validated['title'] ?? '(Không có tiêu đề)',
             'content' => $validated['content'] ?? '',
             'user_id' => Auth::id(),
         ]);
@@ -54,22 +55,21 @@ class NoteController extends Controller
         if ($request->hasFile('images')) {
             foreach ($request->file('images') as $file) {
                 $path = $file->store('note_images', 'public');
-                \App\Models\NoteImage::create(['note_id' => $note->id, 'image_path' => $path]);
+                NoteImage::create(['note_id' => $note->id, 'image_path' => $path]);
             }
         }
 
-        return response()->json(['success' => true, 'note' => $note], 201);
+        return redirect()->back()->with('success', 'Đã tạo ghi chú thành công!');
     }
 
-    public function update(Request $request, Note $note): JsonResponse
+    public function update(Request $request, Note $note): RedirectResponse
     {
-        if ($note->user_id !== Auth::id()) {
-            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
-        }
+        if ($note->user_id !== Auth::id()) abort(403);
 
         $validated = $request->validate([
-            'title'   => 'sometimes|required|string|max:255',
+            'title'   => 'nullable|string|max:255',
             'content' => 'nullable|string',
+            'label_ids'   => 'nullable|array',
         ]);
 
         $note->update([
@@ -77,138 +77,63 @@ class NoteController extends Controller
             'content' => $validated['content'] ?? $note->content,
         ]);
 
-        return response()->json(['success' => true, 'note' => $note]);
+        if (isset($validated['label_ids'])) {
+            $note->labels()->sync($validated['label_ids']);
+        }
+
+        return redirect()->back()->with('success', 'Đã cập nhật ghi chú!');
     }
 
-    public function destroy(Note $note): JsonResponse
+    public function destroy(Note $note): RedirectResponse
     {
-        if ($note->user_id !== Auth::id()) {
-            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
-        }
+        if ($note->user_id !== Auth::id()) abort(403);
         
         foreach ($note->images as $img) {
             Storage::disk('public')->delete($img->image_path);
         }
         $note->delete();
         
-        return response()->json(['success' => true]);
+        return redirect()->back()->with('success', 'Đã xóa ghi chú!');
     }
 
-    public function togglePin(Note $note): JsonResponse
+    public function togglePin(Note $note): RedirectResponse
     {
-        if ($note->user_id !== Auth::id()) {
-            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
-        }
+        if ($note->user_id !== Auth::id()) abort(403);
         
         $note->is_pinned = !$note->is_pinned;
         $note->pinned_at = $note->is_pinned ? now() : null;
         $note->save();
         
-        return response()->json(['success' => true]);
+        return redirect()->back();
     }
 
-    public function toggleLock(Note $note): JsonResponse
+    public function toggleLock(Note $note): RedirectResponse
     {
-        if ($note->user_id !== Auth::id()) {
-            return response()->json(['success' => false], 403);
-        }
+        if ($note->user_id !== Auth::id()) abort(403);
 
         $user = Auth::user();
 
         if (!$user->note_password) {
-            return response()->json([
-                'success' => false, 
-                'requires_set_password' => true 
-            ]);
+            return redirect()->route('settings.profile')->with('error', 'Vui lòng thiết lập mật khẩu bảo mật trước!');
         }
 
-        if ($note->is_locked) {
-            return response()->json([
-                'success' => false, 
-                'requires_password' => true 
-            ]);
-        }
-        
-        $note->is_locked = true;
+        $note->is_locked = !$note->is_locked;
         $note->save();
         
-        return response()->json(['success' => true]);
+        return redirect()->back()->with('success', $note->is_locked ? 'Đã khóa ghi chú' : 'Đã mở khóa ghi chú');
     }
 
-    public function unlock(Request $request, Note $note): JsonResponse
-    {
-        $user = Auth::user();
-
-        //check xem khóa này thuộc về tk nào
-        if ($note->user_id !== $user->id) {
-            return response()->json(['success' => false, 'message' => 'Không có quyền'], 403);
-        }
-
-        //error msg
-        if ($user->locked_until && now()->lessThan($user->locked_until)) {
-            $seconds = now()->diffInSeconds($user->locked_until);
-            $minutes = ceil($seconds / 60);
-            return response()->json([
-                'success' => false, 
-                'message' => "Bạn đã nhập sai quá nhiều lần. Vui lòng thử lại sau $minutes phút."
-            ], 403);
-        }
-
-        //lấy pass db
-        $userNotePassword = $user->note_password;
-
-        if (!$userNotePassword) {
-            return response()->json(['success' => false, 'message' => 'Bạn chưa thiết lập mật khẩu ghi chú!'], 400);
-        }
-
-        //check pass input
-        if (Hash::check($request->password, $userNotePassword)) {
-            $user->update([
-                'wrong_password_count' => 0,
-                'locked_until' => null
-            ]);
-
-            return response()->json([
-                'success' => true,
-                'title' => $note->title,
-                'content' => $note->content,
-                'images' => $note->images 
-            ]);
-        }
-
-        //đếm số lần nhập sai pass
-        $user->increment('wrong_password_count');
-
-        if ($user->wrong_password_count >= 5) {
-            $user->update([
-                'locked_until' => now()->addMinutes(5),
-                'wrong_password_count' => 0 
-            ]);
-            
-            return response()->json([
-                'success' => false, 
-                'message' => 'Bạn đã nhập sai 5 lần! Truy cập bị khóa trong 5 phút.'
-            ], 403);
-        }
-
-        $remain = 5 - $user->wrong_password_count;
-        return response()->json([
-            'success' => false, 
-            'message' => "Sai mật khẩu bảo mật! Bạn còn $remain lần thử."
-        ], 401);
-    }
-
-    public function setNotePassword(Request $request): JsonResponse
+    public function setNotePassword(Request $request): RedirectResponse
     {
         $request->validate([
             'password' => 'required|string|min:4|confirmed',
         ]);
 
-        $user = auth()->user();
+        $user = Auth::user();
         $user->update([
-            'note_password' => \Illuminate\Support\Facades\Hash::make($request->password)
+            'note_password' => Hash::make($request->password)
         ]);
 
-        return response()->json(['success' => true, 'message' => 'Đã thiết lập mật khẩu thành công!']);
+        return redirect()->back()->with('success', 'Đã thiết lập mật khẩu thành công!');
     }
 }
