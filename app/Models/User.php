@@ -12,9 +12,12 @@ class User extends Authenticatable implements MustVerifyEmail
     use HasFactory, Notifiable;
 
     protected $fillable = [
-        'display_name',
+        'display_name',         
         'email',
         'password',
+        'theme',        
+        'font_size',    
+        'note_color',   
     ];
 
     protected $hidden = [
@@ -26,7 +29,18 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return [
             'email_verified_at' => 'datetime',
-            'password' => 'hashed',
+            'password'          => 'hashed',
+            'font_size'         => 'integer',
         ];
+    }
+
+    public function notes()
+    {
+        return $this->hasMany(Note::class);
+    }
+
+    public function labels()
+    {
+        return $this->hasMany(Label::class);
     }
 }

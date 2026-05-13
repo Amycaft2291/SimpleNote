@@ -1,137 +1,86 @@
 <x-app-layout>
-<div class="max-w-5xl mx-auto p-4 md:p-8">
 
-    {{-- TITLE --}}
-    <div class="mb-6">
-        <h4 class="text-2xl font-bold dark:text-white">Tùy chọn tài khoản</h4>
-        <p class="text-sm text-slate-500">
-            Quản lý hồ sơ, giao diện, bảo mật và thông báo của bạn
-        </p>
-    </div>
+<div class="max-w-6xl mx-auto p-4 md:p-8">
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
 
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-
-        {{-- SIDEBAR --}}
-        <div class="md:col-span-1">
-            <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 shadow-sm space-y-2">
-
-                <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 text-sm">
-                    <span class="material-symbols-outlined">person</span>
-                    Hồ sơ
-                </a>
-
-                <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 text-sm">
-                    <span class="material-symbols-outlined">palette</span>
-                    Giao diện
-                </a>
-
-                <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-blue-600 bg-blue-50 dark:bg-slate-700 dark:text-blue-400 font-medium text-sm">
-                    <span class="material-symbols-outlined">security</span>
-                    Bảo mật
-                </a>
-
-                <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 text-sm">
-                    <span class="material-symbols-outlined">notifications</span>
-                    Thông báo
-                </a>
-
-            </div>
+        <div>
+            @include('settings.sidebar')
         </div>
 
-        {{-- MAIN --}}
-        <div class="md:col-span-3 space-y-6">
+        <div class="lg:col-span-3">
 
-            {{-- CHANGE PASSWORD --}}
-            <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-6 shadow-sm">
-
-                <h6 class="font-bold text-slate-800 dark:text-white">Thay đổi mật khẩu</h6>
-                <p class="text-sm text-slate-500 mb-4">Yêu cầu mật khẩu hiện tại để xác minh</p>
-
-                <div class="space-y-4">
-
-                    <div>
-                        <label class="text-sm text-slate-600 dark:text-slate-300">Mật khẩu hiện tại</label>
-                        <input type="password"
-                               class="w-full mt-1 rounded-lg border-slate-300 dark:border-slate-600 dark:bg-slate-900 dark:text-white"
-                               placeholder="Enter your current password">
-                    </div>
-
-                    <div>
-                        <label class="text-sm text-slate-600 dark:text-slate-300">Mật khẩu mới</label>
-                        <input type="password"
-                               class="w-full mt-1 rounded-lg border-slate-300 dark:border-slate-600 dark:bg-slate-900 dark:text-white"
-                               placeholder="Tạo mật khẩu mạnh mới">
-                    </div>
-
-                    <div>
-                        <label class="text-sm text-slate-600 dark:text-slate-300">Xác nhận mật khẩu</label>
-                        <input type="password"
-                               class="w-full mt-1 rounded-lg border-slate-300 dark:border-slate-600 dark:bg-slate-900 dark:text-white"
-                               placeholder="Nhập lại mật khẩu">
-                    </div>
-
-                    <button class="px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                        Cập nhật mật khẩu
-                    </button>
-
+            @if(session('status'))
+                <div class="bg-green-100 text-green-700 px-4 py-3 rounded-xl mb-4">
+                    ✅ {{ session('status') }}
                 </div>
-            </div>
+            @endif
 
-            {{-- ACTIVE SESSIONS --}}
-            <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-6 shadow-sm">
+            <form method="POST"
+                  action="{{ route('settings.password.update') }}"
+                  class="space-y-6">
 
-                <div class="flex justify-between items-center mb-4">
+                @csrf
+                @method('PATCH')
 
-                    <div>
-                        <h6 class="font-bold text-slate-800 dark:text-white">Nơi bạn đăng nhập</h6>
-                        <p class="text-sm text-slate-500">Các thiết bị đang hoạt động</p>
-                    </div>
+                <div class="bg-white dark:bg-slate-800 rounded-3xl p-8 border dark:border-slate-700">
 
-                    <button class="flex items-center gap-2 px-4 py-2 text-sm border border-red-500 text-red-500 rounded-lg hover:bg-red-50 dark:hover:bg-slate-700">
-                        <span class="material-symbols-outlined text-sm">logout</span>
-                        Đăng xuất tất cả
-                    </button>
+                    <h2 class="text-2xl font-bold mb-2 dark:text-white">Bảo mật</h2>
+                    <p class="text-slate-500 text-sm mb-6">
+                        Mật khẩu mới phải có ít nhất 8 ký tự.
+                    </p>
 
-                </div>
+                    <div class="space-y-5">
 
-                {{-- SESSION 1 --}}
-                <div class="flex justify-between items-center py-3">
-                    <div class="flex items-center gap-3">
-
-                        <span class="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_6px_rgba(34,197,94,0.6)]"></span>
-
+                        {{-- Mật khẩu hiện tại --}}
                         <div>
-                            <div class="flex items-center gap-2 font-semibold dark:text-white">
-                                Chrome trên Windows 11
-                                <span class="w-2 h-2 bg-green-500 rounded-full"></span>
-                            </div>
-                            <p class="text-xs text-slate-500">TP.HCM • 2 phút trước</p>
+                            <label class="font-medium dark:text-white">Mật khẩu hiện tại</label>
+                            <input
+                                type="password"
+                                name="current_password"
+                                autocomplete="current-password"
+                                class="w-full mt-2 rounded-xl border-slate-300 dark:border-slate-600 dark:bg-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500">
+                            @error('current_password')
+                                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        {{-- Mật khẩu mới --}}
+                        <div>
+                            <label class="font-medium dark:text-white">Mật khẩu mới</label>
+                            <input
+                                type="password"
+                                name="password"
+                                autocomplete="new-password"
+                                class="w-full mt-2 rounded-xl border-slate-300 dark:border-slate-600 dark:bg-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500">
+                            @error('password')
+                                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        {{-- Xác nhận mật khẩu --}}
+                        <div>
+                            <label class="font-medium dark:text-white">Xác nhận mật khẩu mới</label>
+                            <input
+                                type="password"
+                                name="password_confirmation"
+                                autocomplete="new-password"
+                                class="w-full mt-2 rounded-xl border-slate-300 dark:border-slate-600 dark:bg-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500">
                         </div>
 
                     </div>
+
                 </div>
 
-                {{-- SESSION 2 --}}
-                <div class="flex justify-between items-center py-3 border-t dark:border-slate-700">
-                    <div>
-                        <div class="font-semibold dark:text-white">Safari trên iPhone 15</div>
-                        <p class="text-xs text-slate-500">TP.HCM • 3 giờ trước</p>
-                    </div>
-                    <button class="text-red-500 text-sm">Đăng xuất</button>
+                <div class="flex justify-end">
+                    <button type="submit"
+                            class="px-6 py-3 rounded-xl bg-red-600 hover:bg-red-700 text-white font-medium transition">
+                        Đổi mật khẩu
+                    </button>
                 </div>
 
-                {{-- SESSION 3 --}}
-                <div class="flex justify-between items-center py-3 border-t dark:border-slate-700">
-                    <div>
-                        <div class="font-semibold dark:text-white">Firefox trên macOS</div>
-                        <p class="text-xs text-slate-500">Hà Nội • 2 ngày trước</p>
-                    </div>
-                    <button class="text-red-500 text-sm">Đăng xuất</button>
-                </div>
-
-            </div>
-
+            </form>
         </div>
     </div>
 </div>
+
 </x-app-layout>

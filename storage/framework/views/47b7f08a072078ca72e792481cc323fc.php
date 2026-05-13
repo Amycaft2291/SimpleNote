@@ -25,7 +25,7 @@
     </div>
 <?php endif; ?>
 
-
+<!-- -->
 <div class="max-w-2xl mx-auto mb-10">
     <div id="createBar" class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 transition-all hover:shadow-md">
         <div id="createPlaceholder" class="flex items-center justify-between p-4 cursor-pointer text-slate-400" onclick="openCreateForm()">
@@ -64,7 +64,7 @@
             </div>
         </div>
     </div>
-</div>
+</div>   
 
 
 <div class="flex flex-wrap items-center justify-between mb-6 gap-4">
@@ -151,11 +151,6 @@
             </div>
         </div>
     <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
-        <div class="col-span-4 text-center py-20 text-slate-400">
-            <span class="material-symbols-outlined text-6xl mb-4 block">note_stack</span>
-            <p class="text-lg font-medium">Chưa có ghi chú nào</p>
-            <p class="text-sm mt-1">Bấm "Tạo ghi chú mới" để bắt đầu!</p>
-        </div>
     <?php endif; ?>
 </div>
 
