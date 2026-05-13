@@ -130,7 +130,7 @@
                     data-created-at="{{ $note->created_at->diffForHumans() }}"
                     onclick="openEditModal(this)">
                     
-                    <div class="rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden relative shadow-sm hover:shadow-md transition-all" style="background-color: {{ $userUI->bg }} !important;">                       
+                    <div class="note-card rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden relative shadow-sm hover:shadow-md transition-all cursor-pointer group" onclick="handleNoteClick(event, {{ $note->id }}, {{ $note->is_locked ? 'true' : 'false' }})" style="background-color: {{ $userUI->bg }} !important;">                       
                         <div class="p-5">
                             {{--header--}}
                             <div class="flex justify-between items-start mb-2 gap-4">
@@ -266,7 +266,7 @@
             </div>
         </div>
         
-        {{--modal đặt pass gchu}}
+        {{--modal đặt pass gchu--}}
         <div id="setPasswordModal" class="fixed inset-0 bg-black/50 hidden z-[100] flex items-center justify-center backdrop-blur-sm">
             <div class="bg-white dark:bg-slate-900 rounded-2xl p-6 w-full max-w-sm mx-4 shadow-2xl border border-slate-200 dark:border-slate-800">
                 <h3 class="text-xl font-bold mb-2 text-slate-900 dark:text-white">Thiết lập mật khẩu ghi chú</h3>
@@ -548,7 +548,6 @@
             }
         }
 
-        // Hàm mở/đóng Modal
         function openSetPasswordModal(noteId) {
             const form = document.getElementById('setPasswordForm');
             form.dataset.noteId = noteId; 
@@ -559,38 +558,6 @@
             document.getElementById('setPasswordModal').classList.add('hidden');
         }
 
-        // Sửa lại hàm toggleLock hiện tại của bạn
-        async function toggleLock(event, button, noteId) {
-            if (event) {
-                event.stopPropagation();
-                event.preventDefault();
-            }
-
-            try {
-                const response = await fetch(`/notes/${noteId}/toggle-lock`, {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                    }
-                });
-
-                const data = await response.json();
-
-                if (data.success) {
-                    window.location.reload();
-                } else if (data.requires_set_password) {
-                    openSetPasswordModal(noteId); // Hiện bảng đặt pass nếu chưa có
-                } else if (data.requires_password) {
-                    openUnlockModal(noteId); // Hiện prompt nhập pass nếu đang khóa
-                }
-            } catch (error) {
-                console.error('Lỗi Lock:', error);
-            }
-        }
-
-        // Hàm xử lý đặt mật khẩu lần đầu
         async function handleSetPassword(event) {
             event.preventDefault();
             const form = event.target;
@@ -611,32 +578,79 @@
             const data = await response.json();
             if (data.success) {
                 closeSetPasswordModal();
-                toggleLock(null, null, noteId); // Tự động khóa ghi chú sau khi đặt pass xong
+                await toggleLock(null, null, noteId); // Dùng await vì toggleLock giờ là async
             } else {
                 alert(data.message || 'Lỗi đặt mật khẩu');
             }
         }
 
-        // Hàm mở khóa (dùng prompt đơn giản)
+        async function handleNoteClick(event, noteId, isLocked) {
+            if (event.target.closest('button')) return; 
+
+            if (isLocked) {
+                await openUnlockModal(noteId);
+            } else {
+                if (typeof openEditModal === 'function') {
+                    openEditModal(noteId);
+                }
+            }
+        }
+
+        async function toggleLock(event, button, noteId) {
+            if (event) {
+                event.stopPropagation(); 
+                event.preventDefault();
+            }
+
+            try {
+                const response = await fetch(`/notes/${noteId}/toggle-lock`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    window.location.reload();
+                } 
+                else if (data.requires_set_password) {
+                    openSetPasswordModal(noteId);
+                } 
+                else if (data.requires_password) {
+                    await openUnlockModal(noteId);
+                }
+            } catch (error) {
+                console.error('Lỗi:', error);
+            }
+        }
+
         async function openUnlockModal(noteId) {
-            const password = prompt("Nhập mật khẩu ghi chú để mở khóa:");
+            const password = prompt("Ghi chú này đã được khóa. Nhập mật khẩu để mở:");
             if (!password) return;
 
-            const response = await fetch(`/notes/${noteId}/unlock`, {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify({ password })
-            });
+            try {
+                const response = await fetch(`/notes/${noteId}/unlock`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ password })
+                });
 
-            const data = await response.json();
-            if (data.success) {
-                window.location.reload();
-            } else {
-                alert(data.message || "Sai mật khẩu");
+                const data = await response.json();
+                if (data.success) {
+                    window.location.reload();
+                } else {
+                    alert(data.message || "Sai mật khẩu!");
+                }
+            } catch (e) {
+                console.error("Lỗi unlock:", e);
             }
         }
 

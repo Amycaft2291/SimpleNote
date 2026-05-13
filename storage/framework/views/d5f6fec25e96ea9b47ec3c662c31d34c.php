@@ -140,7 +140,7 @@
                     data-created-at="<?php echo e($note->created_at->diffForHumans()); ?>"
                     onclick="openEditModal(this)">
                     
-                    <div class="rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden relative shadow-sm hover:shadow-md transition-all" style="background-color: <?php echo e($userUI->bg); ?> !important;">                       
+                    <div class="note-card rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden relative shadow-sm hover:shadow-md transition-all cursor-pointer group" onclick="handleNoteClick(event, <?php echo e($note->id); ?>, <?php echo e($note->is_locked ? 'true' : 'false'); ?>)" style="background-color: <?php echo e($userUI->bg); ?> !important;">                       
                         <div class="p-5">
                             
                             <div class="flex justify-between items-start mb-2 gap-4">
@@ -281,6 +281,27 @@
                 </div>
             </div>
         </div>
+        
+        
+        <div id="setPasswordModal" class="fixed inset-0 bg-black/50 hidden z-[100] flex items-center justify-center backdrop-blur-sm">
+            <div class="bg-white dark:bg-slate-900 rounded-2xl p-6 w-full max-w-sm mx-4 shadow-2xl border border-slate-200 dark:border-slate-800">
+                <h3 class="text-xl font-bold mb-2 text-slate-900 dark:text-white">Thiết lập mật khẩu ghi chú</h3>
+                <p class="text-sm text-slate-500 dark:text-slate-400 mb-6">Mật khẩu này dùng để bảo vệ tất cả ghi chú của bạn.</p>
+                
+                <form id="setPasswordForm" onsubmit="handleSetPassword(event)">
+                    <div class="space-y-4">
+                        <input type="password" name="password" placeholder="Mật khẩu mới (ít nhất 4 ký tự)" required 
+                            class="w-full rounded-xl border-slate-300 dark:bg-slate-800 dark:border-slate-700 dark:text-white focus:ring-2 focus:ring-blue-500">
+                        <input type="password" name="password_confirmation" placeholder="Xác nhận mật khẩu" required 
+                            class="w-full rounded-xl border-slate-300 dark:bg-slate-800 dark:border-slate-700 dark:text-white focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div class="flex justify-end gap-3 mt-8">
+                        <button type="button" onclick="closeSetPasswordModal()" class="px-4 py-2 text-slate-500 font-medium">Hủy</button>
+                        <button type="submit" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold transition-all shadow-lg shadow-blue-500/30">Lưu & Khóa</button>
+                    </div>
+                </form>
+            </div>
+        </div>
 
         <script>
         const CSRF = document.querySelector('meta[name="csrf-token"]').content;
@@ -340,7 +361,7 @@
         }
 
         //sửa/xóa gchu
-        function openEditModal(card) {
+        async function openEditModal(card) {
             const isLocked = card.dataset.locked === "1";
             let noteTitle = card.dataset.title;
             let noteContent = card.dataset.content;
@@ -543,9 +564,57 @@
             }
         }
 
+        function openSetPasswordModal(noteId) {
+            const form = document.getElementById('setPasswordForm');
+            form.dataset.noteId = noteId; 
+            document.getElementById('setPasswordModal').classList.remove('hidden');
+        }
+
+        function closeSetPasswordModal() {
+            document.getElementById('setPasswordModal').classList.add('hidden');
+        }
+
+        async function handleSetPassword(event) {
+            event.preventDefault();
+            const form = event.target;
+            const noteId = form.dataset.noteId;
+            const password = form.password.value;
+            const password_confirmation = form.password_confirmation.value;
+
+            const response = await fetch('/user/set-note-password', {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({ password, password_confirmation })
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                closeSetPasswordModal();
+                await toggleLock(null, null, noteId); // Dùng await vì toggleLock giờ là async
+            } else {
+                alert(data.message || 'Lỗi đặt mật khẩu');
+            }
+        }
+
+        async function handleNoteClick(event, noteId, isLocked) {
+            if (event.target.closest('button')) return; 
+
+            if (isLocked) {
+                await openUnlockModal(noteId);
+            } else {
+                if (typeof openEditModal === 'function') {
+                    openEditModal(noteId);
+                }
+            }
+        }
+
         async function toggleLock(event, button, noteId) {
             if (event) {
-                event.stopPropagation();
+                event.stopPropagation(); 
                 event.preventDefault();
             }
 
@@ -563,9 +632,41 @@
 
                 if (data.success) {
                     window.location.reload();
+                } 
+                else if (data.requires_set_password) {
+                    openSetPasswordModal(noteId);
+                } 
+                else if (data.requires_password) {
+                    await openUnlockModal(noteId);
                 }
             } catch (error) {
-                console.error('Lỗi kết nối:', error);
+                console.error('Lỗi:', error);
+            }
+        }
+
+        async function openUnlockModal(noteId) {
+            const password = prompt("Ghi chú này đã được khóa. Nhập mật khẩu để mở:");
+            if (!password) return;
+
+            try {
+                const response = await fetch(`/notes/${noteId}/unlock`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ password })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    window.location.reload();
+                } else {
+                    alert(data.message || "Sai mật khẩu!");
+                }
+            } catch (e) {
+                console.error("Lỗi unlock:", e);
             }
         }
 
