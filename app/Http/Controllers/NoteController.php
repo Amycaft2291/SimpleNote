@@ -103,7 +103,17 @@ class NoteController extends Controller
                              ->whereIn('id', $request->input('labels'))
                              ->pluck('id');
         }
-        $note->labels()->sync($labelIds);        
+
+        $note->labels()->sync($labelIds);
+        
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $file) {
+                $path = $file->store('note_images', 'public');
+                $note->images()->create([
+                    'image_path' => $path
+                ]);
+            }
+        }
         return back()->with('success', 'Đã cập nhật ghi chú!');
     }
 
