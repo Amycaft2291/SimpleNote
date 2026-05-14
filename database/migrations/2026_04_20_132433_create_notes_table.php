@@ -13,16 +13,16 @@ return new class extends Migration
             $table->string('title');
             $table->text('content')->nullable();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->boolean('is_pinned')->default(false); // Tính năng ghim [cite: 28, 182]
+            $table->boolean('is_pinned')->default(false); //ghim gchu
             $table->timestamp('pinned_at')->nullable();
-            $table->string('password')->nullable(); // Khóa ghi chú [cite: 39, 183]
+            $table->boolean('is_locked')->default(false);
             $table->timestamps();
         });
 
         Schema::create('labels', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('color')->default('#3b82f6'); // <-- Bổ sung dòng này
+            $table->string('color')->default('#3b82f6');
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->timestamps();
         });
@@ -36,8 +36,8 @@ return new class extends Migration
         Schema::create('note_shares', function (Blueprint $table) {
             $table->id();
             $table->foreignId('note_id')->constrained()->onDelete('cascade');
-            $table->string('email'); // Email người nhận [cite: 44, 238]
-            $table->enum('permission', ['read', 'edit'])->default('read'); // Quyền xem/sửa [cite: 45, 238]
+            $table->string('email'); //email ng nhận
+            $table->enum('permission', ['read', 'edit'])->default('read'); //xem/sửa
             $table->timestamps();
         });
 
