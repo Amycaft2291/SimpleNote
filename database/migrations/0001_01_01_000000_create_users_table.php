@@ -20,15 +20,15 @@ return new class extends Migration
             $table->string('note_password')->nullable();
             $table->integer('wrong_password_count')->default(0);
             $table->timestamp('locked_until')->nullable(); 
-            
-            //kích hoạt tk
-            $table->boolean('is_activated')->default(false);
-            $table->string('activation_token')->nullable();
 
             //giao diện ng dùng
             $table->integer('font_size')->default(16);
             $table->string('note_color')->default('#ffffff'); 
             $table->string('theme')->default('light');
+            
+            //kích hoạt tk
+            $table->boolean('is_activated')->default(false);
+            $table->string('activation_token')->nullable();
             
             $table->rememberToken();
             $table->timestamps();

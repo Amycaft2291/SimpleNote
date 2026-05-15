@@ -15,18 +15,23 @@ class AppearanceController extends Controller
     }
 
     public function update(Request $request)
-    {
-        $validated = $request->validate([
-            'theme'      => 'required|in:light,dark',
-            'font_size'  => 'required|integer|min:12|max:24',
-            'note_color' => 'nullable|string|max:20',
-        ]);
+{
+    $validated = $request->validate([
+        'theme' => 'required|in:light,dark',
+        'font_size' => 'required|integer|min:12|max:24',
+    ]);
 
-        $request->user()->update($validated);
+    $user = $request->user();
 
-        // Lưu theme vào session để apply ngay lập tức không cần reload
-        session(['theme' => $validated['theme']]);
+    $user->theme = $validated['theme'];
+    $user->font_size = $validated['font_size'];
 
-        return back()->with('status', 'Đã lưu cấu hình giao diện!');
-    }
+    $user->save();
+
+    session([
+        'theme' => $user->theme
+    ]);
+
+    return back()->with('status', 'Đã lưu giao diện!');
+}
 }

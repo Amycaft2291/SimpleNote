@@ -18,21 +18,37 @@ class ProfileController extends Controller
         ]);
     }
 
-    public function update(ProfileUpdateRequest $request): RedirectResponse
+   public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $request->user()->fill($request->validated());
+        $user = $request->user();
 
-        // Nếu đổi email → reset trạng thái xác minh, gửi lại email verify
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
-            $request->user()->save();
-            $request->user()->sendEmailVerificationNotification();
+        // update text fields
+        $user->display_name = $request->display_name;
+        $user->email = $request->email;
 
-            return Redirect::route('settings.profile')
-                ->with('status', 'Cập nhật thành công! Vui lòng xác minh email mới của bạn.');
+        // upload avatar
+        if ($request->hasFile('avatar')) {
+
+            $avatarPath = $request->file('avatar')
+                ->store('avatars', 'public');
+
+            $user->avatar = $avatarPath;
         }
 
-        $request->user()->save();
+        // nếu đổi email
+        if ($user->isDirty('email')) {
+
+            $user->email_verified_at = null;
+
+            $user->save();
+
+            $user->sendEmailVerificationNotification();
+
+            return Redirect::route('settings.profile')
+                ->with('status', 'Cập nhật thành công! Vui lòng xác minh email mới.');
+        }
+
+        $user->save();
 
         return Redirect::route('settings.profile')
             ->with('status', 'Cập nhật hồ sơ thành công!');
