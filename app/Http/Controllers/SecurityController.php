@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Hash;
 
 class SecurityController extends Controller
 {
-    public function index()
+    public function edit()
     {
         return view('settings.security', [
             'user' => auth()->user(),
