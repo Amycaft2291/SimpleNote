@@ -184,6 +184,23 @@
                             @endif
                         </div>
 
+                        {{--img--}}
+                        @if(!($note->is_locked && !$isUnlocked) && $note->images->count() > 0)
+                            <div class="grid grid-cols-{{ min($note->images->count(), 2) }} gap-1 mb-4 rounded-lg overflow-hidden border border-slate-100 dark:border-slate-700">
+                                @foreach($note->images->take(4) as $image)
+                                    <div class="relative aspect-video">
+                                        <img src="{{ asset('storage/' . $image->image_path) }}" 
+                                            class="w-full h-full object-cover">
+                                        @if($loop->iteration == 4 && $note->images->count() > 4)
+                                            <div class="absolute inset-0 bg-black/40 flex items-center justify-center text-white text-xs font-bold">
+                                                +{{ $note->images->count() - 3 }}
+                                            </div>
+                                        @endif
+                                    </div>
+                                @endforeach
+                            </div>
+                        @endif
+
                         {{--label--}}
                         @if($note->labels->count() > 0)
                             <div class="flex flex-wrap gap-1 mt-4">
