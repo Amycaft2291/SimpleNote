@@ -1,33 +1,79 @@
 <!DOCTYPE html>
-<html>
+<html lang="vi">
+
 <head>
-    <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f7f8fc; padding: 40px; }
-        .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
-        .header { background-color: #1a1f36; padding: 30px; text-align: center; color: #ffffff; }
-        .content { padding: 40px 30px; color: #12172a; line-height: 1.6; }
-        .button { display: inline-block; padding: 14px 32px; background-color: #e8457a; color: #ffffff; text-decoration: none; border-radius: 50px; font-weight: bold; margin-top: 20px; }
-        .footer { background-color: #f7f8fc; padding: 20px; text-align: center; font-size: 12px; color: #a0a8c0; }
-    </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kích hoạt tài khoản</title>
 </head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h2>Welcome to SimpleNote!</h2>
-        </div>
-        <div class="content">
-            <p>Xin chào <strong>{{ $user->display_name }}</strong>,</p>
-            <p>Cảm ơn bạn đã đăng ký tài khoản tại SimpleNote. Để hoàn tất việc đăng ký và bảo vệ tài khoản của bạn, vui lòng xác nhận địa chỉ email bằng cách nhấn vào nút dưới đây:</p>
-            
-            <div style="text-align: center;">
-                <a href="{{ url('/activate/' . $user->activation_token) }}" class="button">Kích hoạt tài khoản ngay</a>
-            </div>
-            
-            <p style="margin-top: 30px; font-size: 13px; color: #7a8099;">Nếu bạn không tạo tài khoản này, xin vui lòng bỏ qua email.</p>
-        </div>
-        <div class="footer">
-            &copy; {{ date('Y') }} SimpleNote. All rights reserved.
-        </div>
-    </div>
+
+<body style="margin:0;padding:0;background:#f4f4f4;font-family:Arial,sans-serif;">
+
+    <table width="100%" cellpadding="0" cellspacing="0" style="padding:40px 20px;">
+        <tr>
+            <td align="center">
+
+                <table width="600" cellpadding="0" cellspacing="0"
+                    style="background:#ffffff;border-radius:10px;overflow:hidden;">
+
+                    <!-- Header -->
+                    <tr>
+                        <td align="center"
+                            style="background:#4f46e5;padding:30px;color:white;">
+                            
+                            <h1 style="margin:0;font-size:28px;">
+                                SimpleNote
+                            </h1>
+
+                            <p style="margin-top:8px;font-size:14px;">
+                                Welcome to SimpleNote
+                            </p>
+                        </td>
+                    </tr>
+
+                    <!-- Content -->
+                    <tr>
+                        <td style="padding:40px 30px;color:#333;">
+
+                            <h2 style="margin-top:0;">
+                                Xin chào {{ $user->display_name }},
+                            </h2>
+
+                            <p style="line-height:1.7;">
+                                Cảm ơn bạn đã đăng ký tài khoản tại
+                                <strong>SimpleNote</strong>.
+                            </p>
+
+                            <p style="line-height:1.7;">
+                                Vui lòng nhấn nút bên dưới để kích hoạt tài khoản.
+                            </p>
+
+                            <!-- Button -->
+                            <div style="text-align:center;margin:35px 0;">
+
+                                <a href="{{ url('/activate/' . $user->activation_token) }}"
+                                    style="
+                                        background:#4f46e5;
+                                        color:white;
+                                        text-decoration:none;
+                                        padding:14px 30px;
+                                        border-radius:6px;
+                                        display:inline-block;
+                                        font-weight:bold;
+                                    ">
+                                    Kích hoạt tài khoản
+                                </a>
+
+                            </div>
+
+                        </td>
+                    </tr>
+
+                </table>
+            </td>
+        </tr>
+    </table>
+
 </body>
+
 </html>
