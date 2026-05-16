@@ -167,19 +167,27 @@
 
         const reader = new FileReader();
 
-        reader.onload = function (e) {
-            const preview = document.getElementById('avatarPreview');
+       reader.onload = function (e) {
 
-            // Nếu đang là <div> chữ cái → thay bằng <img>
-            if (preview.tagName === 'DIV') {
-                const img = document.createElement('img');
-                img.id        = 'avatarPreview';
-                img.className = 'w-20 h-20 rounded-full object-cover border border-slate-200 dark:border-slate-700 shadow-sm';
-                preview.replaceWith(img);
-            }
+    let preview = document.getElementById('avatarPreview');
 
-            document.getElementById('avatarPreview').src = e.target.result;
-        };
+    // Nếu đang là <div> chữ cái → thay bằng <img>
+    if (preview.tagName === 'IMG') {
+
+        const img = document.createElement('img');
+
+        img.id = 'avatarPreview';
+
+        img.className =
+            'w-20 h-20 rounded-full object-cover border border-slate-200 dark:border-slate-700 shadow-sm';
+
+        preview.replaceWith(img);
+
+        preview = img;
+    }
+
+    preview.src = e.target.result;
+};
 
         reader.readAsDataURL(file);
     });
