@@ -46,8 +46,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/note-images/{image}', [NoteController::class, 'deleteImage'])->name('notes.delete-image');
 
     Route::post('/notes/{note}/toggle-pin', [NoteController::class, 'togglePin'])->name('notes.toggle-pin');
-    Route::post('/notes/{note}/toggle-lock', [NoteController::class, 'toggleLock'])->name('notes.toggle-lock');
-    Route::post('/notes/{note}/unlock', [NoteController::class, 'unlock'])->name('notes.unlock');
+    Route::post('/notes/{note}/lock', [NoteController::class, 'lock'])->name('notes.lock');
+    Route::post('/notes/{note}/unlock-temp', [NoteController::class, 'unlockTemp'])->name('notes.unlock-temp');
+    Route::post('/notes/{note}/remove-pw', [NoteController::class, 'removePw'])->name('notes.remove-pw');
 
     Route::post('/labels', [LabelController::class, 'store'])->name('labels.store');
     Route::put('/labels/{label}', [LabelController::class, 'update'])->name('labels.update');

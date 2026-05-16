@@ -15,15 +15,10 @@ return new class extends Migration
             $table->string('display_name'); 
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
-            $table->string('password');
-            
-            $table->string('note_password')->nullable();
-            $table->integer('wrong_password_count')->default(0);
-            $table->timestamp('locked_until')->nullable(); 
+            $table->string('password'); 
 
             //giao diện ng dùng
-            $table->integer('font_size')->default(16);
-            $table->string('note_color')->default('#ffffff'); 
+            $table->integer('font_size')->default(16); 
             $table->string('theme')->default('light');
             
             //kích hoạt tk

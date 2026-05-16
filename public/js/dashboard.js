@@ -1,10 +1,38 @@
 let currentSortOrder = 'newest';
 
+function applyDynamicCardColors() {
+    const cards = document.querySelectorAll('.note-card');
+
+    cards.forEach(card => {
+        const hexColor = (card.dataset.color || '#ffffff').toLowerCase();
+        const titleEl = card.querySelector('.note-card-title');
+        const contentEl = card.querySelector('.note-card-content');
+
+        if (!titleEl || !contentEl) return;
+
+        if (hexColor === '#1e293b') {
+            titleEl.className = "note-card-title font-bold text-base leading-snug break-words text-slate-50";
+            contentEl.className = "note-card-content line-clamp-5 text-sm leading-relaxed break-words text-slate-200";
+        } else {
+            // Tất cả các màu còn lại (Trắng mặc định hoặc 6 màu Pastel sáng) -> Dùng chung class chữ tối
+            // Thêm dark: để tự động tương thích tốt nếu user bật giao diện Dark Mode hệ thống khi card màu trắng
+            titleEl.className = "note-card-title font-bold text-base leading-snug break-words text-slate-900 dark:text-slate-100";
+            contentEl.className = "note-card-content line-clamp-5 text-sm leading-relaxed break-words text-slate-600 dark:text-slate-300";
+        }
+    });
+}
+
 function openCreateForm() {
     document.getElementById('createPlaceholder').classList.add('hidden');
     const form = document.getElementById('createForm');
     form.classList.remove('hidden');
     form.querySelector('input[name="title"]').focus();
+}
+
+function selectCreateColor(btn, color) {
+    document.getElementById('createNoteColorInput').value = color;
+    btn.parentElement.querySelectorAll('button').forEach(b => b.classList.remove('ring-2', 'ring-blue-500'));
+    btn.classList.add('ring-2', 'ring-blue-500');
 }
 
 function closeCreateForm() {
@@ -20,7 +48,6 @@ function handleNoteClick(event, card, isLocked, isUnlocked) {
         alert("Ghi chú này đang được bảo vệ. Vui lòng mở khóa trước.");
         return;
     }
-
     openEditModal(card);
 }
 
@@ -33,26 +60,38 @@ function openEditModal(card) {
     const title = card.dataset.title;
     const content = card.dataset.content;
     const labelIds = card.dataset.labels ? card.dataset.labels.split(',') : [];
-    const imagesData = JSON.parse(card.dataset.images || '[]'); // Lấy mảng ảnh
+    const imagesData = JSON.parse(card.dataset.images || '[]');
+    const noteColor = card.dataset.color || '#ffffff';
 
     document.getElementById('editNoteId').value = id;
     document.getElementById('editTitle').value = title;
     document.getElementById('editContent').value = content;
 
-    form.action = '/notes/' + id;
-    if (deleteForm) {
-        deleteForm.action = '/notes/' + id;
+    // Đồng bộ màu vào input ẩn của Modal Sửa
+    const editColorInput = document.getElementById('editNoteColor');
+    if (editColorInput) editColorInput.value = noteColor;
+
+    // Kích hoạt vòng highlight ring xanh đúng màu đang sở hữu trong Modal Sửa
+    const palette = document.getElementById('editColorPalette');
+    if (palette) {
+        palette.querySelectorAll('button').forEach(btn => {
+            btn.classList.remove('ring-2', 'ring-blue-500');
+            if (btn.dataset.color && btn.dataset.color.toLowerCase() === noteColor.toLowerCase()) {
+                btn.classList.add('ring-2', 'ring-blue-500');
+            }
+        });
     }
+
+    form.action = '/notes/' + id;
+    if (deleteForm) deleteForm.action = '/notes/' + id;
 
     document.querySelectorAll('.edit-label-cb').forEach(cb => {
         cb.checked = labelIds.includes(cb.value);
     });
 
     const imgContainer = document.getElementById('editImagesContainer');
-    const newPreviewContainer = document.getElementById('newImagesPreview');
-
+    document.getElementById('newImagesPreview').innerHTML = '';
     imgContainer.innerHTML = '';
-    newPreviewContainer.innerHTML = '';
 
     imagesData.forEach(img => {
         const div = document.createElement('div');
@@ -69,6 +108,13 @@ function openEditModal(card) {
     });
 
     modal.classList.remove('hidden');
+}
+
+// BỔ SUNG: Hàm đổi màu và ghim ring xanh highlight khi bấm bảng màu trong MODAL SỬA
+function selectEditColor(btn, color) {
+    document.getElementById('editNoteColor').value = color;
+    btn.parentElement.querySelectorAll('button').forEach(b => b.classList.remove('ring-2', 'ring-blue-500'));
+    btn.classList.add('ring-2', 'ring-blue-500');
 }
 
 function submitDeleteImage(imageId) {
@@ -165,4 +211,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const savedView = localStorage.getItem('sn_view') || 'grid';
     setView(savedView);
     sortNotes();
+
+    applyDynamicCardColors();
 });

@@ -36,41 +36,42 @@
 
         {{--khung nhập gchu nhanh--}}
         <div class="max-w-2xl mx-auto mb-10">
-            <div id="createBar" class="rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 transition-all hover:shadow-md" 
-                style="background-color: {{ $userUI->bg }} !important;">
+            <div id="createBar" class="rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 bg-slate-100/70 dark:bg-slate-900/60 transition-all hover:shadow-md">
                 
                 {{--form chưa mở--}}
-                <div id="createPlaceholder" class="flex items-center justify-between p-4 cursor-pointer {{ $userUI->content }}" onclick="openCreateForm()">
+                <div id="createPlaceholder" class="flex items-center justify-between p-4 cursor-pointer text-slate-500 dark:text-slate-400" onclick="openCreateForm()">
                     <span class="font-medium text-sm">Tạo ghi chú mới...</span>
-                    <span class="material-symbols-outlined">image</span>
+                    <div class="flex items-center gap-2">
+                        <span class="material-symbols-outlined text-slate-400">palette</span>
+                        <span class="material-symbols-outlined text-slate-400">image</span>
+                    </div>
                 </div>
 
                 {{--form đã mở--}}
                 <form id="createForm" action="{{ route('notes.store') }}" method="POST" enctype="multipart/form-data" class="hidden p-4 space-y-3">
                     @csrf
+                    
                     <input name="title" type="text" placeholder="Tiêu đề" 
-                        class="w-full font-bold border-none outline-none focus:ring-0 px-0 {{ $userUI->title }}" 
-                        style="background-color: transparent !important;">
+                        class="w-full font-bold border-none outline-none focus:ring-0 px-0 bg-transparent text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500">
                     
                     <textarea name="content" rows="3" placeholder="Nội dung ghi chú..." 
-                            class="w-full text-sm border-none outline-none resize-none focus:ring-0 px-0 {{ $userUI->content }}" 
-                            style="background-color: transparent !important;"></textarea>
+                            class="w-full text-sm border-none outline-none resize-none focus:ring-0 px-0 bg-transparent text-slate-700 dark:text-slate-300 placeholder-slate-400 dark:placeholder-slate-500"></textarea>
                     
                     {{--img--}}
                     <div>
-                        <label class="text-[10px] font-bold {{ $userUI->muted }} uppercase block mb-1">Ảnh đính kèm</label>
+                        <label class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase block mb-1">Ảnh đính kèm</label>
                         <input type="file" name="images[]" multiple accept="image/*" 
-                            class="text-sm {{ $userUI->muted }} file:mr-4 file:py-1 file:px-3 file:rounded-full file:border-0 file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                            class="text-sm text-slate-500 dark:text-slate-400 file:mr-4 file:py-1 file:px-3 file:rounded-full file:border-0 file:bg-blue-50 dark:file:bg-slate-800 file:text-blue-700 dark:file:text-blue-400 hover:file:bg-blue-100">
                     </div>
                     
                     {{--label--}}
-                    <div class="border-t {{ $userUI->border }} pt-3">
-                        <p class="text-[10px] font-bold {{ $userUI->muted }} uppercase mb-2">Gán Nhãn</p>
+                    <div class="border-t border-slate-200/60 dark:border-slate-800 pt-3">
+                        <p class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase mb-2">Gán Nhãn</p>
                         <div class="flex flex-wrap gap-2">
                             @isset($labels)
                                 @foreach($labels as $label)
-                                <label class="flex items-center gap-1.5 text-xs bg-black/5 px-2 py-1 rounded-lg cursor-pointer hover:bg-black/10 {{ $userUI->content }}">
-                                    <input type="checkbox" name="label_ids[]" value="{{ $label->id }}" class="rounded border-slate-300 text-blue-600 shadow-sm focus:ring-blue-500">
+                                <label class="flex items-center gap-1.5 text-xs bg-black/5 dark:bg-white/5 px-2 py-1 rounded-lg cursor-pointer hover:bg-black/10 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300">
+                                    <input type="checkbox" name="label_ids[]" value="{{ $label->id }}" class="rounded border-slate-300 text-blue-600 shadow-sm focus:ring-blue-500 bg-transparent">
                                     <span class="w-2 h-2 rounded-full flex-shrink-0" style="background-color: {{ $label->color }}"></span>
                                     {{ $label->name }}
                                 </label>
@@ -79,13 +80,43 @@
                         </div>
                     </div>
 
-                    <div class="flex justify-end gap-2 pt-2 border-t {{ $userUI->border }}">
-                        <button type="button" onclick="closeCreateForm()" class="px-4 py-1.5 text-sm rounded-lg hover:bg-black/5 {{ $userUI->content }}">Đóng</button>
-                        <button type="submit" class="px-4 py-1.5 text-sm font-semibold bg-blue-600 text-white rounded-lg hover:bg-blue-700">Lưu</button>
+                    {{-- THANH TIỆN ÍCH DƯỚI CÙNG: Thêm Palette chọn màu cố định --}}
+                    <div class="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-slate-200/60 dark:border-slate-800">
+                        
+                        <div class="flex items-center gap-1.5 border border-slate-200 dark:border-slate-700 rounded-xl px-2.5 py-1 bg-white dark:bg-slate-800 shadow-sm">
+                            <span class="material-symbols-outlined text-slate-400 dark:text-slate-500 text-sm">palette</span>
+                            <div class="flex gap-1">
+                                <input type="hidden" name="note_color" id="createNoteColorInput" value="#ffffff">
+                                
+                                <button type="button" onclick="selectCreateColor(this, '#ffffff')" class="w-4 h-4 rounded-full border border-slate-300 ring-2 ring-blue-500 bg-white" title="Mặc định"></button>
+                                <button type="button" onclick="selectCreateColor(this, '#fef08a')" class="w-4 h-4 rounded-full border border-black/5 bg-[#fef08a]" title="Vàng pastel"></button>
+                                <button type="button" onclick="selectCreateColor(this, '#bbf7d0')" class="w-4 h-4 rounded-full border border-black/5 bg-[#bbf7d0]" title="Xanh lá pastel"></button>
+                                <button type="button" onclick="selectCreateColor(this, '#bfdbfe')" class="w-4 h-4 rounded-full border border-black/5 bg-[#bfdbfe]" title="Xanh dương pastel"></button>
+                                <button type="button" onclick="selectCreateColor(this, '#fbcfe8')" class="w-4 h-4 rounded-full border border-black/5 bg-[#fbcfe8]" title="Hồng pastel"></button>
+                                <button type="button" onclick="selectCreateColor(this, '#fed7aa')" class="w-4 h-4 rounded-full border border-black/5 bg-[#fed7aa]" title="Cam pastel"></button>
+                                <button type="button" onclick="selectCreateColor(this, '#1e293b')" class="w-4 h-4 rounded-full border border-white/10 bg-[#1e293b]" title="Xám xanh tối"></button>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-2">
+                            <button type="button" onclick="closeCreateForm()" class="px-4 py-1.5 text-sm rounded-lg hover:bg-black/5 dark:hover:bg-white/5 text-slate-500 dark:text-slate-400">Đóng</button>
+                            <button type="submit" class="px-4 py-1.5 text-sm font-semibold bg-blue-600 text-white rounded-lg hover:bg-blue-700 shadow-sm shadow-blue-500/10">Lưu</button>
+                        </div>
                     </div>
                 </form>
             </div>
         </div>
+
+        <script>
+            // Hàm xử lý tương tác click nút đổi màu trên UI
+            function selectCreateColor(btn, color) {
+                document.getElementById('createNoteColorInput').value = color;
+                // Gỡ vòng ring xanh của các nút màu khác
+                btn.parentElement.querySelectorAll('button').forEach(b => b.classList.remove('ring-2', 'ring-blue-500'));
+                // Thêm vòng ring xanh vào nút hiện tại được bấm
+                btn.classList.add('ring-2', 'ring-blue-500');
+            }
+        </script>
 
         {{--toolbar nhỏ--}}
         <div class="flex flex-wrap items-center justify-between mb-6 gap-4">
@@ -132,7 +163,7 @@
                     data-timestamp="{{ $note->updated_at->timestamp }}"
                     data-created-at="{{ $note->created_at->diffForHumans() }}"                    
                     onclick="handleNoteClick(event, this, {{ $note->is_locked ? 'true' : 'false' }}, {{ $isUnlocked ? 'true' : 'false' }})" 
-                    style="background-color: {{ $userUI->bg }} !important;">
+                    style="background-color: {{ $note->note_color ?? 'transparent' }}">
                     
                     <div class="p-5">
                         {{--header--}}

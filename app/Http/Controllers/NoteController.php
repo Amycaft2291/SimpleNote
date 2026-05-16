@@ -50,18 +50,21 @@ class NoteController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'title'       => 'nullable|string|max:255',
-            'content'     => 'nullable|string',
-            'labels'   => 'nullable|array',
-            'labels.*' => 'integer|exists:labels,id',
-            'images'      => 'nullable|array',
-            'images.*'    => 'file|image|max:5120',
+            'title'      => 'nullable|string|max:255',
+            'content'    => 'nullable|string',
+            'note_color' => 'nullable|string|in:#ffffff,#fef08a,#bbf7d0,#bfdbfe,#fbcfe8,#fed7aa,#1e293b',
+            'labels'     => 'nullable|array',
+            'labels.*'   => 'integer|exists:labels,id',
+            'images'     => 'nullable|array',
+            'images.*'   => 'file|image|max:5120',
         ]);
 
+        // SỬA LỖI: Thêm note_color vào đây để lưu xuống DB
         $note = Note::create([
-            'title'   => $validated['title'] ?? '(Không có tiêu đề)',
-            'content' => $validated['content'] ?? '',
-            'user_id' => Auth::id(),
+            'title'      => $validated['title'] ?? '(Không có tiêu đề)',
+            'content'    => $validated['content'] ?? '',
+            'note_color' => $validated['note_color'] ?? '#ffffff', // Mặc định là màu trắng nếu không chọn
+            'user_id'    => Auth::id(),
         ]);
 
         if (!empty($validated['labels'])) {
@@ -86,24 +89,28 @@ class NoteController extends Controller
         if ($note->user_id !== Auth::id()) abort(403);
 
         $validated = $request->validate([
-            'title'   => 'nullable|string|max:255',
-            'content' => 'nullable|string',
-            'labels'   => 'nullable|array',
-            'labels.*' => 'integer|exists:labels,id',
+            'title'      => 'nullable|string|max:255',
+            'content'    => 'nullable|string',
+            'note_color' => 'nullable|string|in:#ffffff,#fef08a,#bbf7d0,#bfdbfe,#fbcfe8,#fed7aa,#1e293b',
+            'labels'     => 'nullable|array',
+            'labels.*'   => 'integer|exists:labels,id',
+            'images'     => 'nullable|array',        // BỔ SUNG: Validate ảnh khi update
+            'images.*'   => 'file|image|max:5120',   // BỔ SUNG: Đảm bảo bảo mật file ảnh
         ]);
 
+        // SỬA LỖI: Thêm note_color vào lệnh update và dùng biến $validated đã sạch
         $note->update([
-            'title'   => $request->title ?? '(Không có tiêu đề)',
-            'content' => $request->content,
+            'title'      => $validated['title'] ?? '(Không có tiêu đề)',
+            'content'    => $validated['content'],
+            'note_color' => $validated['note_color'] ?? $note->note_color, // Giữ màu cũ nếu request không truyền
         ]);
 
         $labelIds = [];
-        if ($request->has('labels')) {
+        if (!empty($validated['labels'])) { // Đồng bộ cách viết dùng dữ liệu đã validate cho an toàn
             $labelIds = Label::where('user_id', Auth::id())
-                             ->whereIn('id', $request->input('labels'))
-                             ->pluck('id');
+                            ->whereIn('id', $validated['labels'])
+                            ->pluck('id');
         }
-
         $note->labels()->sync($labelIds);
         
         if ($request->hasFile('images')) {
@@ -114,6 +121,7 @@ class NoteController extends Controller
                 ]);
             }
         }
+        
         return back()->with('success', 'Đã cập nhật ghi chú!');
     }
 
@@ -157,33 +165,59 @@ class NoteController extends Controller
         return redirect()->back();
     }
 
-    public function toggleLock(Note $note): RedirectResponse
+    public function lock(Request $request, Note $note): RedirectResponse
     {
         if ($note->user_id !== Auth::id()) abort(403);
 
-        $user = Auth::user();
-
-        if (!$user->note_password) {
-            return redirect()->route('settings.profile')->with('error', 'Vui lòng thiết lập mật khẩu bảo mật trước!');
-        }
-
-        $note->is_locked = !$note->is_locked;
-        $note->save();
-        
-        return redirect()->back()->with('success', $note->is_locked ? 'Đã khóa ghi chú' : 'Đã mở khóa ghi chú');
-    }
-
-    public function setNotePassword(Request $request): RedirectResponse
-    {
+        // Validate bắt buộc nhập 2 lần trùng nhau và tối thiểu 4 ký tự
         $request->validate([
             'password' => 'required|string|min:4|confirmed',
         ]);
 
-        $user = Auth::user();
-        $user->update([
-            'note_password' => Hash::make($request->password)
+        // Lưu mật khẩu (Tự động hash nhờ cast 'hashed' ở Model)
+        $note->note_password = $request->password;
+        $note->is_locked = true; // Chuyển trạng thái sang Đang Khóa
+        $note->save();
+
+        return back()->with('success', 'Đã thiết lập mật khẩu thành công!');
+    }
+
+    public function unlockTemp(Request $request, Note $note): RedirectResponse
+    {
+        if ($note->user_id !== Auth::id()) abort(403);
+
+        $request->validate([
+            'password' => 'required|string',
         ]);
 
-        return redirect()->back()->with('success', 'Đã thiết lập mật khẩu thành công!');
+        // Check xem pass nhập vào có khớp với pass đang lưu của Note không
+        if (!Hash::check($request->password, $note->note_password)) {
+            return back()->with('error', 'Mật khẩu ghi chú không chính xác!');
+        }
+
+        $note->is_locked = false; // Mở khóa trạng thái hiển thị
+        $note->save();
+
+        return back()->with('success', 'Đã mở khóa ghi chú.');
+    }
+
+    public function removePw(Request $request, Note $note): RedirectResponse
+    {
+        if ($note->user_id !== Auth::id()) abort(403);
+
+        $request->validate([
+            'password' => 'required|string', // Nhập mật khẩu hiện tại để xác thực gỡ bỏ
+        ]);
+
+        if (!Hash::check($request->password, $note->note_password)) {
+            return back()->with('error', 'Mật khẩu xác nhận không chính xác!');
+        }
+
+        // XÓA SẠCH mật khẩu trong database
+        $note->note_password = null; 
+        $note->is_locked = false;
+        $note->save();
+
+        return back()->with('success', 'Đã gỡ bỏ mật khẩu!');
     }
 }
