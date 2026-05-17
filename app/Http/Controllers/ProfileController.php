@@ -13,7 +13,7 @@ class ProfileController extends Controller
 {
     public function edit(Request $request): View
     {
-        return view('settings.profile', compact('user'));
+        return view('settings.profile', ['user' => $request->user(),]);
     }
 
    public function update(ProfileUpdateRequest $request): RedirectResponse
