@@ -12,20 +12,16 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
-// use Illuminate\Support\Str;
 
 class RegisteredUserController extends Controller
 {
-    /**
-     * Display the registration view.
-     */
+
     public function create(): View
     {
         return view('auth.register');
     }
 
     /**
-     * Handle an incoming registration request.
      *
      * @throws ValidationException
      */
@@ -40,8 +36,8 @@ class RegisteredUserController extends Controller
         $user = User::create([
             'display_name' => $request->display_name,
             'email' => $request->email,
-            'password' => Hash::make($request->password), // Tự động băm Bcrypt [cite: 7, 188]
-            // 'activation_token' => Str::random(60), // Tạo token để gửi qua email [cite: 180]
+            'password' => Hash::make($request->password), 
+            // 'activation_token' => Str::random(60), 
         ]);
 
         event(new Registered($user));

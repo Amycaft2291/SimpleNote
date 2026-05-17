@@ -9,13 +9,11 @@ class AppearanceController extends Controller
 {
     public function edit()
     {
-        return view('settings.appearance', [
-            'user' => Auth::user(),
-        ]);
+        return view('settings.appearance', ['user' => Auth::user(),]);
     }
 
     public function update(Request $request)
-{
+    {
     $validated = $request->validate([
         'theme' => 'required|in:light,dark',
         'font_size' => 'required|integer|min:12|max:24',
@@ -28,9 +26,7 @@ class AppearanceController extends Controller
 
     $user->save();
 
-    session([
-        'theme' => $user->theme
-    ]);
+    session(['theme' => $user->theme]);
 
     return back()->with('status', 'Đã lưu giao diện!');
 }

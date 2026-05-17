@@ -13,53 +13,37 @@ class ProfileController extends Controller
 {
     public function edit(Request $request): View
     {
-        return view('settings.profile', [
-            'user' => $request->user(),
-        ]);
+        return view('settings.profile', compact('user'));
     }
 
    public function update(ProfileUpdateRequest $request): RedirectResponse
     {
         $user = $request->user();
 
-        // update text fields
         $user->display_name = $request->display_name;
         $user->email = $request->email;
 
-        // upload avatar
-        if ($request->hasFile('avatar')) {
-
-            $avatarPath = $request->file('avatar')
-                ->store('avatars', 'public');
-
+        if ($request->hasFile('avatar')) 
+        {
+            $avatarPath = $request->file('avatar')->store('avatars', 'public');
             $user->avatar = $avatarPath;
         }
 
-        // nếu đổi email
-        if ($user->isDirty('email')) {
-
+        if ($user->isDirty('email')) 
+        {
             $user->email_verified_at = null;
-
             $user->save();
-
             $user->sendEmailVerificationNotification();
-
-            return Redirect::route('settings.profile')
-                ->with('status', 'Cập nhật thành công! Vui lòng xác minh email mới.');
+            return Redirect::route('settings.profile')->with('status', 'Cập nhật thành công! Vui lòng xác minh email mới.');
         }
 
         $user->save();
-
-        return Redirect::route('settings.profile')
-            ->with('status', 'Cập nhật hồ sơ thành công!');
+        return Redirect::route('settings.profile')->with('status', 'Cập nhật hồ sơ thành công!');
     }
 
     public function destroy(Request $request): RedirectResponse
     {
-        $request->validateWithBag('userDeletion', [
-            'password' => ['required', 'current_password'],
-        ]);
-
+        $request->validateWithBag('userDeletion', ['password' => ['required', 'current_password'],]);
         $user = $request->user();
 
         Auth::logout();

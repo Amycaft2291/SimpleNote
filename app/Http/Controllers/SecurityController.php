@@ -9,9 +9,7 @@ class SecurityController extends Controller
 {
     public function edit()
     {
-        return view('settings.security', [
-            'user' => auth()->user(),
-        ]);
+        return view('settings.security', ['user' => auth()->user(),]);
     }
 
     public function updatePassword(Request $request)
@@ -27,14 +25,10 @@ class SecurityController extends Controller
         $user = $request->user();
 
         if (!Hash::check($request->current_password, $user->password)) {
-            return back()->withErrors([
-                'current_password' => 'Mật khẩu hiện tại không đúng!',
-            ]);
+            return back()->withErrors(['current_password' => 'Mật khẩu hiện tại không đúng!',]);
         }
 
-        $user->update([
-            'password' => Hash::make($request->password),
-        ]);
+        $user->update(['password' => Hash::make($request->password),]);
 
         return back()->with('status', 'Đổi mật khẩu thành công!');
     }
