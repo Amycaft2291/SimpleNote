@@ -51,6 +51,10 @@ return new class extends Migration
 
     public function down(): void
     {
+        Schema::dropIfExists('note_images');
+        Schema::dropIfExists('note_shares');
+        Schema::dropIfExists('note_label');        
+        Schema::dropIfExists('labels');
         Schema::dropIfExists('notes');
     }
 };
