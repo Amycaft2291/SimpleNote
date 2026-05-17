@@ -31,23 +31,21 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('settings.password.update');
 
     // Notes CRUD (RESTful, AJAX)
-    Route::post  ('/notes',              [NoteController::class, 'store'])->name('notes.store');
-    Route::put   ('/notes/{note}',       [NoteController::class, 'update'])->name('notes.update');
-    Route::delete('/notes/{note}',       [NoteController::class, 'destroy'])->name('notes.destroy');
-    Route::patch ('/notes/{note}/pin',   [NoteController::class, 'togglePin'])->name('notes.pin');
-
-    // // Quản lý Giao diện (Appearance)
-    // Route::get  ('/settings/appearance', [AppearanceController::class, 'edit'])->name('appearance.edit');
-    // Route::patch('/settings/appearance', [AppearanceController::class, 'update'])->name('appearance.update');
-
     Route::post('/notes', [NoteController::class, 'store'])->name('notes.store');
     Route::put('/notes/{note}', [NoteController::class, 'update'])->name('notes.update');
     Route::delete('/notes/{note}', [NoteController::class, 'destroy'])->name('notes.destroy');
     Route::delete('/note-images/{image}', [NoteController::class, 'deleteImage'])->name('notes.delete-image');
-
+    
+    // Các tính năng tương tác của Note
     Route::post('/notes/{note}/toggle-pin', [NoteController::class, 'togglePin'])->name('notes.toggle-pin');
     Route::post('/notes/{note}/toggle-lock', [NoteController::class, 'toggleLock'])->name('notes.toggle-lock');
     Route::post('/notes/{note}/unlock', [NoteController::class, 'unlock'])->name('notes.unlock');
+    Route::post('/notes/{note}/re-lock', [NoteController::class, 'reLock'])->name('notes.re-lock');
+    Route::post('/notes/{note}/disable-lock', [NoteController::class, 'disableLock'])->name('notes.disable-lock');
+    
+    // // Quản lý Giao diện (Appearance)
+    // Route::get  ('/settings/appearance', [AppearanceController::class, 'edit'])->name('appearance.edit');
+    // Route::patch('/settings/appearance', [AppearanceController::class, 'update'])->name('appearance.update');
 
     Route::post('/labels', [LabelController::class, 'store'])->name('labels.store');
     Route::put('/labels/{label}', [LabelController::class, 'update'])->name('labels.update');

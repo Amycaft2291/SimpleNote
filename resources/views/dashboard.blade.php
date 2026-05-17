@@ -116,15 +116,20 @@
         <div id="notesContainer" class="masonry-grid">
             @forelse($notes as $note)
                 @php
-                    $isUnlocked = session("note_unlocked_{$note->id}");
+                    $isUnlocked = session("unlocked_notes.{$note->id}");
+                    
+                    $noteColor = $note->note_color ?? '#ffffff';
+                    $noteUI = $getNoteUI($noteColor);
+
                     $displayTitle = ($note->is_locked && !$isUnlocked) ? 'Ghi chú bị khóa' : $note->title;
-                    $displayContent = ($note->is_locked && !$isUnlocked) ? 'Nội dung ẩn' : $note->content;
+                    $displayContent = ($note->is_locked && !$isUnlocked) ? 'Nội dung ẩn để bảo mật' : $note->content;
                 @endphp
 
                 <div class="masonry-item group cursor-pointer note-card rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden relative shadow-sm hover:shadow-md transition-all" 
                     data-id="{{ $note->id }}"
                     data-locked="{{ $note->is_locked ? 1 : 0 }}"
-                    data-color="{{ $userUI->bg }}"
+                    data-unlocked="{{ $isUnlocked ? 1 : 0 }}"
+                    data-color="{{ $noteColor }}"
                     data-title="{{ e($displayTitle) }}"
                     data-content="{{ e($displayContent) }}" 
                     data-labels="{{ $note->labels->pluck('id')->join(',') }}"
@@ -132,17 +137,16 @@
                     data-timestamp="{{ $note->updated_at->timestamp }}"
                     data-created-at="{{ $note->created_at->diffForHumans() }}"                    
                     onclick="handleNoteClick(event, this, {{ $note->is_locked ? 'true' : 'false' }}, {{ $isUnlocked ? 'true' : 'false' }})" 
-                    style="background-color: {{ $userUI->bg }} !important;">
+                    style="background-color: {{ $noteColor }} !important;">
                     
                     <div class="p-5">
-                        {{--header--}}
+                        {{--title + icon--}}
                         <div class="flex justify-between items-start mb-2 gap-4">
                             <div class="flex flex-col overflow-hidden">
-                                <h2 class="note-title font-bold text-base {{ $userUI->title }} leading-snug break-words">
-                                    {{ $displayTitle ?: 'Không tiêu đề' }}
+                                <h2 class="note-title font-bold text-base {{ $noteUI->title }} leading-snug break-words">
+                                    {{ $displayTitle ?: '(Không có tiêu đề)' }}
                                 </h2>
-                                {{--tgian--}}
-                                <div class="flex items-center gap-1 text-[10px] {{ $userUI->muted }} mt-1 font-bold uppercase tracking-wider">
+                                <div class="flex items-center gap-1 text-[10px] {{ $noteUI->muted }} mt-1 font-bold uppercase tracking-wider">
                                     <span class="material-symbols-outlined text-[12px]">calendar_today</span>
                                     {{ $note->updated_at->format('d/m/Y') }}
                                 </div>
@@ -152,32 +156,55 @@
                             <div class="flex gap-1 shrink-0">
                                 <form action="{{ route('notes.toggle-pin', $note->id) }}" method="POST">
                                     @csrf
-                                    <button type="submit" class="p-1.5 rounded-lg transition-all {{ $note->is_pinned ? 'text-yellow-500 bg-yellow-50' : 'text-slate-400 hover:bg-black/5 opacity-0 group-hover:opacity-100' }}">
+                                    <button type="submit" onclick="event.stopPropagation();" class="p-1.5 rounded-lg transition-all {{ $note->is_pinned ? 'text-yellow-500 bg-yellow-50' : 'text-slate-400 hover:bg-black/5 opacity-0 group-hover:opacity-100' }}">
                                         <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' {{ $note->is_pinned ? 1 : 0 }};">push_pin</span>
                                     </button>
                                 </form>
 
-                                <form action="{{ route('notes.toggle-lock', $note->id) }}" method="POST">
-                                    @csrf
-                                    <button type="submit" class="p-1.5 rounded-lg transition-all {{ $note->is_locked ? 'text-blue-500 bg-blue-50' : 'text-slate-400 hover:bg-black/5 opacity-0 group-hover:opacity-100' }}">
-                                        <span class="material-symbols-outlined text-[20px]">
-                                            {{ $note->is_locked ? 'lock' : 'lock_open' }}
-                                        </span>
+                                @if($note->is_locked)
+                                    @if($isUnlocked)
+                                        {{--trạng thái mở khóa--}}
+                                        <form action="{{ route('notes.re-lock', $note->id) }}" method="POST" class="inline">
+                                            @csrf
+                                            <button type="submit" onclick="event.stopPropagation();" 
+                                                    class="p-1.5 rounded-lg transition-all text-green-600 bg-green-50 hover:bg-green-100"
+                                                    title="Bấm để KHÓA LẠI NGAY LẬP TỨC">
+                                                <span class="material-symbols-outlined text-[20px]">lock_open</span>
+                                            </button>
+                                        </form>
+                                    @else
+                                        {{--trạng thái khóa--}}
+                                        <button type="button" 
+                                                onclick="event.stopPropagation(); openUnlockModal({{ $note->id }})" 
+                                                class="p-1.5 rounded-lg transition-all text-red-500 bg-red-50 hover:bg-red-100"
+                                                title="Ghi chú đang khóa. Bấm để MỞ KHÓA XEM">
+                                            <span class="material-symbols-outlined text-[20px]">lock</span>
+                                        </button>
+                                    @endif
+                                @else
+                                    {{--trạng thái trống khóa--}}
+                                    <button type="button" 
+                                            onclick="event.stopPropagation(); openSetPasswordModal({{ $note->id }})" 
+                                            class="p-1.5 rounded-lg transition-all text-slate-400 hover:bg-black/5 opacity-0 group-hover:opacity-100"
+                                            title="Thiết lập mật khẩu bảo vệ">
+                                        <span class="material-symbols-outlined text-[20px]">lock_open</span>
                                     </button>
-                                </form>
+                                @endif
                             </div>
                         </div>
 
-                        {{--nd--}}
+                        {{--text--}}
                         <div class="mt-3">
                             @if($note->is_locked && !$isUnlocked)
-                                <div class="py-6 flex flex-col items-center justify-center text-slate-400 bg-black/5 rounded-lg border border-dashed border-slate-300 dark:border-slate-600">
+                                {{--khóa--}}
+                                <div class="py-6 flex flex-col items-center justify-center text-slate-400 bg-black/5 dark:bg-black/20 rounded-lg border border-dashed border-slate-300 dark:border-slate-600">
                                     <span class="material-symbols-outlined text-3xl mb-2">encrypted</span>
-                                    <p class="text-[10px] font-bold uppercase tracking-widest">Ghi chú đã bị khóa</p>
+                                    <p class="text-[10px] font-bold uppercase tracking-widest">Nội dung bị khóa</p>
                                 </div>
                             @else
+                                {{--k khóa--}}
                                 @if($note->content)
-                                    <p class="note-content line-clamp-5 text-sm {{ $userUI->content }} leading-relaxed break-words">
+                                    <p class="note-content line-clamp-5 text-sm {{ $noteUI->content }} leading-relaxed break-words">
                                         {{ $note->content }}
                                     </p>
                                 @endif
@@ -186,11 +213,10 @@
 
                         {{--img--}}
                         @if(!($note->is_locked && !$isUnlocked) && $note->images->count() > 0)
-                            <div class="grid grid-cols-{{ min($note->images->count(), 2) }} gap-1 mb-4 rounded-lg overflow-hidden border border-slate-100 dark:border-slate-700">
+                            <div class="grid grid-cols-{{ min($note->images->count(), 2) }} gap-1 mb-4 rounded-lg overflow-hidden border border-slate-100 dark:border-slate-700 mt-3">
                                 @foreach($note->images->take(4) as $image)
                                     <div class="relative aspect-video">
-                                        <img src="{{ asset('storage/' . $image->image_path) }}" 
-                                            class="w-full h-full object-cover">
+                                        <img src="{{ asset('storage/' . $image->image_path) }}" class="w-full h-full object-cover">
                                         @if($loop->iteration == 4 && $note->images->count() > 4)
                                             <div class="absolute inset-0 bg-black/40 flex items-center justify-center text-white text-xs font-bold">
                                                 +{{ $note->images->count() - 3 }}
@@ -214,13 +240,11 @@
                     </div>
                 </div>
             @empty
-                <!-- <div class="col-span-full text-center py-20 text-slate-400">
+                <div class="col-span-full text-center py-20 text-slate-400">
                     <span class="material-symbols-outlined text-6xl mb-4 block">note_stack</span>
                     <p class="text-lg font-medium">Chưa có ghi chú nào</p>
-                    <p class="text-sm mt-1">Bấm "Tạo ghi chú mới" để bắt đầu!</p>
-                </div> -->
-            @endforelse
-        </div> 
+                </div>
+            @endforelse 
 
         {{--modal sửa/xóa gchu--}}
         <div id="editModal" class="hidden fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">            
@@ -267,13 +291,28 @@
 
                 {{--footer--}}
                 <div class="px-5 py-4 bg-slate-50 dark:bg-slate-900/50 border-t flex justify-between items-center">
-                    <button type="button" onclick="submitDelete()" class="text-sm text-red-500 font-bold flex items-center gap-1">
+                    {{--trái: xóa gchu--}}
+                    <button type="button" onclick="submitDelete()" class="text-sm text-red-500 font-bold flex items-center gap-1 hover:text-red-600 transition-all">
                         <span class="material-symbols-outlined text-base">delete</span> XÓA
                     </button>
                     
-                    <div class="flex gap-3">
-                        <button type="button" onclick="closeEditModal()" class="px-4 py-2 text-sm text-slate-600">Hủy</button>
-                        <button type="submit" class="px-6 py-2 text-sm font-bold bg-blue-600 text-white rounded-xl">Lưu thay đổi</button>
+                    {{--phải--}}
+                    <div class="flex items-center gap-3">
+                        
+                        {{--gỡ mk--}}
+                        <div id="modalDisableLockContainer" class="hidden">
+                            <button type="button" onclick="triggerDisableLockFromEdit()" 
+                                    class="px-3 py-2 text-red-600 bg-red-50 hover:bg-red-100 dark:bg-red-950/30 dark:hover:bg-red-900/40 rounded-xl font-bold flex items-center gap-1 transition-all text-xs">
+                                <span class="material-symbols-outlined text-[16px]">no_encryption</span>
+                                Gỡ mật khẩu
+                            </button>
+                        </div>
+
+                        {{--đóng--}}
+                        <button type="button" onclick="closeEditModal()" class="px-4 py-2 text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all">Đóng</button>
+                        
+                        {{--lưu--}}
+                        <button type="submit" class="px-6 py-2 text-sm font-bold bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-md transition-all">Lưu thay đổi</button>
                     </div>
                 </div>
             </form>
@@ -284,22 +323,81 @@
             @method('DELETE')
         </form>
         
-        {{--modal đặt pass gchu--}}
-        <div id="setPasswordModal" class="fixed inset-0 bg-black/50 hidden z-[100] flex items-center justify-center backdrop-blur-sm">
-            <div class="bg-white dark:bg-slate-900 rounded-2xl p-6 w-full max-w-sm mx-4 shadow-2xl border border-slate-200 dark:border-slate-800">
-                <h3 class="text-xl font-bold mb-2 text-slate-900 dark:text-white">Thiết lập mật khẩu ghi chú</h3>
-                <p class="text-sm text-slate-500 dark:text-slate-400 mb-6">Mật khẩu này dùng để bảo vệ tất cả ghi chú của bạn.</p>
+        {{--modal đặt/gỡ/mở pass gchu--}}
+        <div id="unlockModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/50 backdrop-blur-sm">
+            <div class="bg-white dark:bg-slate-900 rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-slate-100 dark:border-slate-800 m-4 animate-scaleUp">
+                <div class="flex items-center gap-3 text-red-500 mb-4">
+                    <span class="material-symbols-outlined text-3xl">lock</span>
+                    <h3 class="text-lg font-bold text-slate-900 dark:text-white">Yêu cầu mật khẩu</h3>
+                </div>
+                <p class="text-sm text-slate-500 dark:text-slate-400 mb-4">Ghi chú này đã được bảo vệ. Vui lòng nhập mật khẩu riêng của ghi chú để xem nội dung.</p>
                 
-                <form id="setPasswordForm" onsubmit="handleSetPassword(event)">
+                {{-- Form gửi dữ liệu đến hàm unlock() --}}
+                <form method="POST" action="">
+                    @csrf
+                    <div class="mb-4">
+                        <input type="password" name="password" placeholder="Nhập mật khẩu ghi chú" required
+                            class="w-full rounded-xl border-slate-300 dark:bg-slate-800 dark:border-slate-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        @error('unlock_password')
+                            <p class="text-xs text-red-500 mt-1 font-medium">{{ $message }}</p>
+                        @enderror
+                    </div>
+                    <div class="flex justify-end gap-3">
+                        <button type="button" onclick="document.getElementById('unlockModal').classList.replace('flex', 'hidden')" class="px-4 py-2 text-slate-500 font-medium hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-all">Hủy</button>
+                        <button type="submit" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold shadow-lg shadow-blue-500/20 transition-all">Mở khóa</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div id="setPasswordModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/50 backdrop-blur-sm">
+            <div class="bg-white dark:bg-slate-900 rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-slate-100 dark:border-slate-800 m-4">
+                <div class="flex items-center gap-3 text-blue-600 mb-4">
+                    <span class="material-symbols-outlined text-3xl">enhanced_encryption</span>
+                    <h3 class="text-lg font-bold text-slate-900 dark:text-white">Đặt mật khẩu ghi chú</h3>
+                </div>
+                
+                {{-- Form gửi dữ liệu đến hàm lock() --}}
+                <form method="POST" action="">
+                    @csrf
                     <div class="space-y-4">
-                        <input type="password" name="password" placeholder="Mật khẩu mới (ít nhất 4 ký tự)" required 
-                            class="w-full rounded-xl border-slate-300 dark:bg-slate-800 dark:border-slate-700 dark:text-white focus:ring-2 focus:ring-blue-500">
-                        <input type="password" name="password_confirmation" placeholder="Xác nhận mật khẩu" required 
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-slate-400 dark:text-slate-500 mb-1">Mật khẩu mới</label>
+                            <input type="password" name="password" placeholder="Tối thiểu 4 ký tự" required
+                                class="w-full rounded-xl border-slate-300 dark:bg-slate-800 dark:border-slate-700 dark:text-white focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-slate-400 dark:text-slate-500 mb-1">Xác nhận mật khẩu</label>
+                            <input type="password" name="password_confirmation" placeholder="Nhập lại mật khẩu mới" required
+                                class="w-full rounded-xl border-slate-300 dark:bg-slate-800 dark:border-slate-700 dark:text-white focus:ring-2 focus:ring-blue-500">
+                        </div>
+                    </div>
+                    <div class="flex justify-end gap-3 mt-6">
+                        <button type="button" onclick="document.getElementById('setPasswordModal').classList.replace('flex', 'hidden')" class="px-4 py-2 text-slate-500 font-medium hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-all">Hủy</button>
+                        <button type="submit" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold shadow-lg shadow-blue-500/20 transition-all">Kích hoạt khóa</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div id="disableLockModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/50 backdrop-blur-sm">
+            <div class="bg-white dark:bg-slate-900 rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-slate-100 dark:border-slate-800 m-4">
+                <div class="flex items-center gap-3 text-amber-500 mb-4">
+                    <span class="material-symbols-outlined text-3xl">no_encryption</span>
+                    <h3 class="text-lg font-bold text-slate-900 dark:text-white">Tắt bảo vệ ghi chú</h3>
+                </div>
+                <p class="text-sm text-slate-500 dark:text-slate-400 mb-4">Để tắt tính năng bảo mật, vui lòng nhập lại mật khẩu hiện tại của ghi chú này để xác nhận.</p>
+                
+                {{-- Form gửi dữ liệu đến hàm disableLock() --}}
+                <form method="POST" action="">
+                    @csrf
+                    <div class="mb-4">
+                        <input type="password" name="confirm_password" placeholder="Nhập mật khẩu hiện tại" required
                             class="w-full rounded-xl border-slate-300 dark:bg-slate-800 dark:border-slate-700 dark:text-white focus:ring-2 focus:ring-blue-500">
                     </div>
-                    <div class="flex justify-end gap-3 mt-8">
-                        <button type="button" onclick="closeSetPasswordModal()" class="px-4 py-2 text-slate-500 font-medium">Hủy</button>
-                        <button type="submit" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold transition-all shadow-lg shadow-blue-500/30">Lưu & Khóa</button>
+                    <div class="flex justify-end gap-3">
+                        <button type="button" onclick="document.getElementById('disableLockModal').classList.replace('flex', 'hidden')" class="px-4 py-2 text-slate-500 font-medium hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-all">Hủy</button>
+                        <button type="submit" class="px-5 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-bold shadow-lg shadow-amber-500/20 transition-all">Gỡ bỏ khóa</button>
                     </div>
                 </form>
             </div>

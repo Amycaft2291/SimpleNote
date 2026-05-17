@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\ValidationException;
 use Illuminate\Http\RedirectResponse;
 
 class NoteController extends Controller
@@ -167,30 +168,74 @@ class NoteController extends Controller
         return redirect()->back();
     }
 
-    public function toggleLock(Note $note): RedirectResponse
+    public function unlock(Request $request, Note $note): RedirectResponse
     {
         if ($note->user_id !== Auth::id()) abort(403);
 
-        $user = Auth::user();
+        $request->validate([
+            'password' => 'required|string',
+        ]);
 
-        if (!$user->note_password) 
-        {
-            return redirect()->route('settings.profile')->with('error', 'Vui lòng thiết lập mật khẩu bảo mật trước!');
+        if (Hash::check($request->password, $note->note_password)) {
+            //lưu session
+            session()->put("unlocked_notes.{$note->id}", true);
+            return redirect()->back();
         }
 
-        $note->is_locked = !$note->is_locked;
-        $note->save();
-        
-        return redirect()->back()->with('success', $note->is_locked ? 'Đã khóa ghi chú' : 'Đã mở khóa ghi chú');
+        return redirect()->back()->withErrors(['unlock_password' => 'Mật khẩu ghi chú không chính xác!']);
     }
 
-    public function setNotePassword(Request $request): RedirectResponse
+    public function lock(Request $request, Note $note): RedirectResponse
     {
-        $request->validate(['password' => 'required|string|min:4|confirmed',]);
+        if ($note->user_id !== Auth::id()) abort(403);
 
-        $user = Auth::user();
-        $user->update(['note_password' => Hash::make($request->password)]);
+        //xác nhận lại mk
+        $request->validate([
+            'password' => 'required|string|min:4|confirmed',
+        ], [
+            'password.confirmed' => 'Mật khẩu xác nhận không trùng khớp.',
+        ]);
 
-        return redirect()->back()->with('success', 'Đã thiết lập mật khẩu thành công!');
+        $note->update([
+            'is_locked' => true,
+            'note_password' => Hash::make($request->password)//đồng bộ note_password
+        ]);
+
+        return redirect()->back()->with('success', 'Đã đặt mật khẩu cho ghi chú thành công!');
+    }
+
+    public function reLock(Note $note): RedirectResponse
+    {
+        if ($note->user_id !== Auth::id()) abort(403);
+
+        //xóa dấu vết đã mở khóa ghi chú này trong session
+        session()->forget("unlocked_notes.{$note->id}");
+
+        return redirect()->back()->with('success', 'Đã khóa ghi chú.');
+    }
+
+    //gỡ pass
+    public function disableLock(Request $request, Note $note): RedirectResponse
+    {
+        if ($note->user_id !== Auth::id()) abort(403);
+
+        $request->validate([
+            'confirm_password' => 'required|string',
+        ]);
+
+        //yc pass hiện tại
+        if (!Hash::check($request->confirm_password, $note->note_password)) {
+            throw ValidationException::withMessages(['confirm_password' => 'Mật khẩu xác nhận không chính xác.']);
+        }
+
+        $note->update([
+            'is_locked' => false,
+            'note_password' => null
+        ]);
+
+        //xóa bộ nhớ tạm session
+        session()->forget("unlocked_notes.{$note->id}");
+
+        return redirect()->back()->with('success', 'Đã gỡ mật khẩu.');
     }
 }

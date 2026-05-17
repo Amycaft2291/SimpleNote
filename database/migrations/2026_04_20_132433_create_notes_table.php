@@ -12,10 +12,12 @@ return new class extends Migration
             $table->id();
             $table->string('title');
             $table->text('content')->nullable();
+            $table->string('note_color')->default('#ffffff');
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->boolean('is_pinned')->default(false); //ghim gchu
             $table->timestamp('pinned_at')->nullable();
             $table->boolean('is_locked')->default(false);
+            $table->string('note_password')->nullable();
             $table->timestamps();
         });
 

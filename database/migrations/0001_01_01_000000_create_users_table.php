@@ -17,13 +17,8 @@ return new class extends Migration
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             
-            $table->string('note_password')->nullable();
-            $table->integer('wrong_password_count')->default(0);
-            $table->timestamp('locked_until')->nullable(); 
-
             //giao diện ng dùng
             $table->integer('font_size')->default(16);
-            $table->string('note_color')->default('#ffffff'); 
             $table->string('theme')->default('light');
             
             //kích hoạt tk

@@ -28,17 +28,20 @@ function openEditModal(card) {
     const modal = document.getElementById('editModal');
     const form = document.getElementById('realEditForm');
     const deleteForm = document.getElementById('deleteForm');
-
     const id = card.dataset.id;
+    
     const title = card.dataset.title;
     const content = card.dataset.content;
     const labelIds = card.dataset.labels ? card.dataset.labels.split(',') : [];
-    const imagesData = JSON.parse(card.dataset.images || '[]'); // Lấy mảng ảnh
 
+    const isLocked = card.dataset.locked === "1";
+    const isUnlocked = card.dataset.unlocked === "1";
+    const disableLockContainer = document.getElementById('modalDisableLockContainer');
+    
     document.getElementById('editNoteId').value = id;
-    document.getElementById('editTitle').value = title;
-    document.getElementById('editContent').value = content;
-
+    if(document.getElementById('editTitle')) document.getElementById('editTitle').value = title;
+    if(document.getElementById('editContent')) document.getElementById('editContent').value = content;
+    
     form.action = '/notes/' + id;
     if (deleteForm) {
         deleteForm.action = '/notes/' + id;
@@ -67,8 +70,32 @@ function openEditModal(card) {
         `;
         imgContainer.appendChild(div);
     });
+    
+    if (disableLockContainer) {
+        if (isLocked && isUnlocked) {
+            disableLockContainer.classList.remove('hidden');
+            disableLockContainer.dataset.currentNoteId = id;
+        } else {
+            disableLockContainer.classList.add('hidden');
+        }
+    }
+    
+    modal.classList.replace('hidden', 'flex');
+}
 
-    modal.classList.remove('hidden');
+function triggerDisableLockFromEdit() {
+    const container = document.getElementById('modalDisableLockContainer');
+    const noteId = container.dataset.currentNoteId;
+    
+    if (noteId) {
+        //đóng form chỉnh sửa trc
+        document.getElementById('editModal').classList.replace('flex', 'hidden');
+        
+        //gọi modal nhập lại pass hiện tại
+        if (typeof openDisableLockModal === "function") {
+            openDisableLockModal(noteId); 
+        }
+    }
 }
 
 function submitDeleteImage(imageId) {
